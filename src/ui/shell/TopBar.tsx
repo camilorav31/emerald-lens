@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useEmulatorStore } from '../../store/emulatorStore'
 import { GemMark, Wordmark } from '../brand/GemMark'
+import { ThemeToggle } from './ThemeToggle'
 
 export function TopBar() {
   const [scrolled, setScrolled] = useState(false)
@@ -17,7 +18,7 @@ export function TopBar() {
   const surface = !scrolled
     ? 'border-transparent'
     : live
-      ? 'border-line-1 bg-[rgb(8_9_9/.94)]'
+      ? 'border-line-1 bg-bg-0/95'
       : 'border-line-1 bg-bar backdrop-blur-[12px] backdrop-saturate-[1.1]'
 
   return (
@@ -30,6 +31,7 @@ export function TopBar() {
           <GemMark />
           <Wordmark />
         </a>
+        <div className="flex items-center gap-2">
         {import.meta.env.DEV && (
           <span
             className="inline-flex h-[22px] items-center rounded-sm border border-warn-line bg-warn-tint px-1.5 font-mono text-[11px] font-medium text-warn-fg"
@@ -38,6 +40,8 @@ export function TopBar() {
             DEV<span className="sr-only">: modo desarrollo, autocarga dev-roms/emerald.gba</span>
           </span>
         )}
+        <ThemeToggle />
+        </div>
       </div>
     </header>
   )

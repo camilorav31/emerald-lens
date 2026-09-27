@@ -40,7 +40,7 @@ export function PartyPanel() {
 
   let body
   if (!hasGame(status)) {
-    body = <Message title="Sin cartucho" body="Carga una ROM y tu equipo aparecerá aquí en tiempo real." />
+    body = <Message title="Sin cartucho" body="Inserta tu cartucho y tu equipo aparecerá aquí en tiempo real." />
   } else if (!reading) {
     body = (
       <ul className="grid min-h-0 flex-1 grid-rows-[repeat(6,minmax(52px,1fr))] gap-1.5" aria-hidden="true">

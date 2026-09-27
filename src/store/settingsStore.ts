@@ -1,20 +1,29 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware'
 import type { ControlScheme } from '../emulator/keymaps'
-import type { ScaleMode } from '../ui/game-screen/computeScale'
 
 export type ScreenFilter = 'none' | 'lcd' | 'crt'
+export type Theme = 'dark' | 'light'
 
 interface SettingsState {
-  scaleMode: ScaleMode
   filter: ScreenFilter
+  // file name of the validated cartridge in IndexedDB; it autostarts on every visit
   lastRom: string | null
   controlScheme: ControlScheme
-  setScaleMode: (scaleMode: ScaleMode) => void
+  theme: Theme | null
+  muted: boolean
+  fastForward: boolean
+  perfMonitor: boolean
   setFilter: (filter: ScreenFilter) => void
   setLastRom: (lastRom: string) => void
   setControlScheme: (controlScheme: ControlScheme) => void
+  setTheme: (theme: Theme) => void
+  toggleMuted: () => void
+  toggleFastForward: () => void
+  setPerfMonitor: (perfMonitor: boolean) => void
 }
+
+export const SETTINGS_KEY = 'emerald-lens:settings'
 
 // localStorage throws in some privacy modes; settings are a convenience, so fail quietly
 const safeStorage: StateStorage = {
@@ -44,19 +53,33 @@ const safeStorage: StateStorage = {
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
-      scaleMode: 'auto',
       filter: 'none',
       lastRom: null,
       controlScheme: 'arrows',
-      setScaleMode: (scaleMode) => set({ scaleMode }),
+      theme: null,
+      muted: false,
+      fastForward: false,
+      perfMonitor: false,
       setFilter: (filter) => set({ filter }),
       setLastRom: (lastRom) => set({ lastRom }),
       setControlScheme: (controlScheme) => set({ controlScheme }),
+      setTheme: (theme) => set({ theme }),
+      toggleMuted: () => set((s) => ({ muted: !s.muted })),
+      toggleFastForward: () => set((s) => ({ fastForward: !s.fastForward })),
+      setPerfMonitor: (perfMonitor) => set({ perfMonitor }),
     }),
     {
-      name: 'emerald-lens:settings',
+      name: SETTINGS_KEY,
       storage: createJSONStorage(() => safeStorage),
-      partialize: ({ scaleMode, filter, lastRom, controlScheme }) => ({ scaleMode, filter, lastRom, controlScheme }),
+      partialize: ({ filter, lastRom, controlScheme, theme, muted, fastForward, perfMonitor }) => ({
+        filter,
+        lastRom,
+        controlScheme,
+        theme,
+        muted,
+        fastForward,
+        perfMonitor,
+      }),
     },
   ),
 )

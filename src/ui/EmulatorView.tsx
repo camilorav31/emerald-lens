@@ -6,6 +6,7 @@ import { ConsoleFrame } from './game-screen/ConsoleFrame'
 import { SidePanel } from './panel/SidePanel'
 import { LiveRegion, SkipLink } from './shell/A11y'
 import { Footer } from './shell/Footer'
+import { Splash } from './shell/Splash'
 import { Toaster } from './shell/Toaster'
 import { TopBar } from './shell/TopBar'
 
@@ -37,6 +38,7 @@ export function EmulatorView() {
       <DropOverlay />
       <Toaster />
       <LiveRegion />
+      <Splash />
     </>
   )
 }

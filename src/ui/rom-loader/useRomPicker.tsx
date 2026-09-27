@@ -14,7 +14,7 @@ export function useRomPicker() {
       tabIndex={-1}
       onChange={(event) => {
         const file = event.target.files?.[0]
-        if (file) insertFile(file)
+        if (file) void insertFile(file)
         event.target.value = ''
       }}
     />

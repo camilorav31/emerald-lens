@@ -17,11 +17,12 @@ No hay backend. El sitio no incluye ni aloja ninguna ROM. Tú cargas tu propio a
 
 | | |
 |---|---|
-| ✅ Emulación | mGBA en WebAssembly con hilos, escalado entero en píxeles físicos y filtro LCD/CRT opcional |
-| ✅ Carga de ROM | Arrastrar y soltar o selector de archivo; persistencia en IndexedDB; autoguardado del core |
+| ✅ Emulación | mGBA en WebAssembly con hilos, escalado entero en píxeles físicos, filtro LCD/CRT opcional, velocidad ×2 como interruptor y sonido on/off |
+| ✅ Cartucho | Solo Pokémon Esmeralda (USA/Europa), verificado por código de juego y SHA-1. Lo insertas una vez; se guarda en IndexedDB y arranca solo en cada visita |
 | ✅ Lector de equipo | `partyReader.ts` como función pura, verificado contra el decomp oficial [pret/pokeemerald](https://github.com/pret/pokeemerald) y cubierto con tests |
-| ✅ Panel de equipo | 6 Pokémon en vivo con sprites animados de Showdown; detalle con radar de stats, IV/EV y movimientos |
-| ✅ Controles | Esquema Flechas o WASD, entrada del juego controlada por el foco (Tab para salir), leyenda que se ilumina al presionar |
+| ✅ Panel de equipo | 6 Pokémon en vivo con sprites animados de Showdown; detalle con radar de stats, IV/EV y movimientos; el sprite estalla en píxeles al debilitarse y lanza destellos al subir de nivel |
+| ✅ Controles | Esquema Flechas o WASD dibujado como una GBA que se ilumina al presionar; entrada del juego controlada por el foco (Tab para salir) |
+| ✅ Interfaz | Modo noche (esmeralda profundo) y modo día (blanco con esmeralda), pantalla de carga, diseño responsive y monitor de FPS y memoria |
 | 🚧 Core parcheado | El parche de lectura de memoria está en `core/`; compilarlo requiere Docker. Mientras tanto se lee la memoria mediante snapshots (ver abajo) |
 | 🗺️ Hoja de ruta | Landing, save states con miniatura, gamepad y controles táctiles, PWA offline, trainer card, mapa, timeline y modo streamer |
 
@@ -89,6 +90,8 @@ Cada Pokémon del equipo ocupa 100 bytes en `gPlayerParty` (`0x020244EC`), y el 
 
 - **Escalado entero en píxeles físicos.** El tamaño de la pantalla se calcula en píxeles de dispositivo, así que cada píxel de la GBA mide lo mismo también en pantallas HiDPI. Se recalcula con el zoom del navegador y al cambiar de monitor. La función es pura y tiene tests: [`computeScale.ts`](src/ui/game-screen/computeScale.ts).
 - **Entrada controlada por el foco.** El core escucha el teclado en `window`, así que la app le pasa las teclas solo cuando la pantalla tiene el foco. Así Enter nunca activa un botón y además presiona Start a la vez, y al salir con Tab o al cambiar de pestaña se sueltan las teclas presionadas.
+- **Monitor de rendimiento.** Los FPS de emulación salen de `gMain.vblankCounter1`, el contador que el propio juego incrementa en cada VBlank, leído junto con el equipo; no se engancha al loop del core. La memoria usa `performance.measureUserAgentSpecificMemory()` (solo disponible con aislamiento cross-origin) y, si el navegador no la ofrece, el heap de JavaScript.
+- **Velocidad ×2 sin mantener teclas.** El core trae fijo "mantén F para acelerar" y "mantén R para rebobinar". La app intercepta esas teclas en el canvas antes de que lleguen al listener del core: F alterna ×2 y el rebobinado queda desactivado (`rewindEnable: false`, lo que además ahorra su buffer de estados).
 - **Panel sin scroll.** Durante el juego, el panel muestra solo los controles y el equipo. El resto de las opciones está detrás de la tuerca. El tamaño de cada sprite se calcula a partir de la altura real de la fila y se reduce solo por divisores enteros, para que se vea nítido.
 
 ## Correrlo localmente
@@ -98,7 +101,7 @@ npm install
 npm run dev
 ```
 
-Abre `http://localhost:5173` y arrastra tu `.gba`. Solo está soportado Pokémon Esmeralda (US, código `BPEE`); con otras versiones el juego funciona, pero el panel de equipo lo indica y no se rompe.
+Abre `http://localhost:5173` e inserta tu copia de Pokémon Esmeralda (USA/Europa). Las direcciones de memoria están verificadas para ese dump exacto, así que la app rechaza otros juegos, otras regiones y hacks: comprueba el código `BPEE` del header y el SHA-1 del archivo.
 
 | Comando | Qué hace |
 |---|---|

@@ -1,9 +1,8 @@
 import { create } from 'zustand'
+import { CARTRIDGE_ERRORS, inspectCartridge } from '../emulator/cartridge'
 import type { Emulator, MemoryAccess } from '../emulator/emulator'
 import { announce } from './announcer'
 import { useSettingsStore } from './settingsStore'
-
-const SUPPORTED_GAME_CODES = new Set(['BPEE'])
 
 export type EmulatorStatus = 'booting' | 'idle' | 'running' | 'paused' | 'error'
 export type ErrorKind = 'invalid-file' | 'import' | 'start' | 'dev-rom' | 'core'
@@ -19,18 +18,16 @@ interface EmulatorState {
   status: EmulatorStatus
   error: AppError | null
   notice: string | null
-  storedRoms: string[]
   romName: string | null
   gameCode: string | null
   memoryAccess: MemoryAccess | null
   inputActive: boolean
   importing: boolean
-  // a ROM dropped while the core is still booting
+  // a cartridge dropped while the core is still booting
   pendingFile: File | null
-  ready: (emulator: Emulator) => void
+  ready: (emulator: Emulator) => Promise<void>
   fail: (error: unknown) => void
-  insertFile: (file: File) => void
-  importAndStart: (file: File) => Promise<void>
+  insertFile: (file: File) => Promise<void>
   start: (romName: string) => void
   togglePause: () => void
   setInputActive: (active: boolean) => void
@@ -38,9 +35,7 @@ interface EmulatorState {
   dismissNotice: () => void
 }
 
-export const isSupportedGame = (code: string | null) => code !== null && SUPPORTED_GAME_CODES.has(code)
 export const hasGame = (status: EmulatorStatus) => status === 'running' || status === 'paused'
-export const isRomFile = (file: File) => file.name.toLowerCase().endsWith('.gba')
 
 const messageOf = (error: unknown) => (error instanceof Error ? error.message : String(error))
 
@@ -49,7 +44,6 @@ export const useEmulatorStore = create<EmulatorState>((set, get) => ({
   status: 'booting',
   error: null,
   notice: null,
-  storedRoms: [],
   romName: null,
   gameCode: null,
   memoryAccess: null,
@@ -57,44 +51,58 @@ export const useEmulatorStore = create<EmulatorState>((set, get) => ({
   importing: false,
   pendingFile: null,
 
-  ready: (emulator) => {
-    // Game input stays off until the screen takes focus
+  // Stays in "booting" until it knows whether a stored cartridge can autostart, so the splash covers it
+  ready: async (emulator) => {
+    const settings = useSettingsStore.getState()
     emulator.setInputEnabled(false)
-    set({ emulator, status: 'idle', storedRoms: emulator.storedRoms(), memoryAccess: emulator.memoryAccess })
+    emulator.setMuted(settings.muted)
+    emulator.setFastForward(settings.fastForward)
+    set({ emulator, memoryAccess: emulator.memoryAccess })
+
     const { pendingFile } = get()
     if (pendingFile) {
-      set({ pendingFile: null })
-      void get().importAndStart(pendingFile)
+      set({ pendingFile: null, status: 'idle' })
+      await get().insertFile(pendingFile)
+      return
     }
+    if (import.meta.env.DEV && new URLSearchParams(location.search).get('autoload') === '0') {
+      set({ status: 'idle' })
+      return
+    }
+    const stored = emulator.storedRoms()
+    const candidates = [...new Set([settings.lastRom, ...stored].filter((n): n is string => !!n && stored.includes(n)))]
+    for (const name of candidates) {
+      if ((await emulator.inspectStored(name)).ok) {
+        get().start(name)
+        return
+      }
+    }
+    set({ status: 'idle' })
   },
 
   fail: (error) =>
     set({ status: 'error', error: { kind: 'core', title: 'No se pudo iniciar el emulador', message: messageOf(error) } }),
 
-  insertFile: (file) => {
-    if (!isRomFile(file)) {
-      set({ error: { kind: 'invalid-file', title: 'Archivo no válido', message: 'El archivo debe ser una ROM de GBA (.gba).' } })
+  insertFile: async (file) => {
+    const check = await inspectCartridge(new Uint8Array(await file.arrayBuffer()))
+    if (!check.ok) {
+      set({ error: { kind: 'invalid-file', title: 'Cartucho no compatible', message: CARTRIDGE_ERRORS[check.reason] } })
       return
     }
-    if (get().status === 'booting') {
+    const { emulator, status } = get()
+    if (status === 'booting' || !emulator) {
       set({ pendingFile: file })
       return
     }
-    void get().importAndStart(file)
-  },
-
-  importAndStart: async (file) => {
-    const { emulator } = get()
-    if (!emulator) return
     set({ importing: true })
     let romName: string
     try {
       romName = await emulator.importRom(file)
     } catch (error) {
-      set({ importing: false, error: { kind: 'import', title: 'No se pudo guardar la ROM', message: messageOf(error) } })
+      set({ importing: false, error: { kind: 'import', title: 'No se pudo guardar el cartucho', message: messageOf(error) } })
       return
     }
-    set({ importing: false, storedRoms: emulator.storedRoms(), notice: 'ROM guardada en este navegador' })
+    set({ importing: false, notice: 'Cartucho guardado en este navegador' })
     get().start(romName)
   },
 
@@ -102,14 +110,14 @@ export const useEmulatorStore = create<EmulatorState>((set, get) => ({
     const { emulator } = get()
     if (!emulator) return
     if (!emulator.start(romName)) {
-      set({ error: { kind: 'start', title: 'No se pudo abrir la ROM', message: `mGBA no pudo cargar ${romName}.` } })
+      set({ status: 'idle', error: { kind: 'start', title: 'No se pudo iniciar el cartucho', message: 'mGBA no pudo cargar el juego.' } })
       return
     }
     const settings = useSettingsStore.getState()
     settings.setLastRom(romName)
     emulator.applyKeymap(settings.controlScheme)
-    set({ status: 'running', romName, gameCode: emulator.gameCode(romName), error: null })
-    announce(`ROM cargada: ${romName}`)
+    set({ status: 'running', romName, gameCode: 'BPEE', error: null })
+    announce('Partida iniciada')
   },
 
   togglePause: () => {
@@ -138,5 +146,9 @@ export const useEmulatorStore = create<EmulatorState>((set, get) => ({
 }))
 
 useSettingsStore.subscribe((state, prev) => {
-  if (state.controlScheme !== prev.controlScheme) useEmulatorStore.getState().emulator?.applyKeymap(state.controlScheme)
+  const emulator = useEmulatorStore.getState().emulator
+  if (!emulator) return
+  if (state.controlScheme !== prev.controlScheme) emulator.applyKeymap(state.controlScheme)
+  if (state.muted !== prev.muted) emulator.setMuted(state.muted)
+  if (state.fastForward !== prev.fastForward) emulator.setFastForward(state.fastForward)
 })

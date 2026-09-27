@@ -1,8 +1,9 @@
 import { m } from 'motion/react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type RefObject } from 'react'
 import type { PartyMon } from '../../memory/gen3/pokemon'
 import { useSpecies } from '../../data/useData'
 import { HpBar, ShinyStar, StatusChip, TypeBadge } from './bits'
+import { explodeSprite, sparkle } from './effects'
 import { PokemonSprite } from './PokemonSprite'
 
 export const spriteForm = (mon: PartyMon) => ({ unownForm: mon.unownForm, deoxysForm: 'speed' as const })
@@ -23,9 +24,24 @@ function useFlash(value: number) {
   return flash
 }
 
+// Fires the faint burst when HP drops to 0 and sparkles when the level rises (never on first render)
+function useRowEffects(mon: PartyMon, wrapper: RefObject<HTMLSpanElement | null>, canvas: RefObject<HTMLCanvasElement | null>) {
+  const previous = useRef({ hp: mon.hp, level: mon.level })
+  useEffect(() => {
+    const before = previous.current
+    previous.current = { hp: mon.hp, level: mon.level }
+    if (!canvas.current || mon.isEgg) return
+    if (before.hp > 0 && mon.hp === 0) explodeSprite(canvas.current, wrapper.current?.querySelector('img') ?? null)
+    else if (mon.level > before.level) sparkle(canvas.current)
+  }, [mon.hp, mon.level, mon.isEgg, wrapper, canvas])
+}
+
 export function PartyRow({ mon, spriteHeight, onOpen }: { mon: PartyMon; spriteHeight: number; onOpen: () => void }) {
   const species = useSpecies(mon.isEgg ? null : mon.dex)
   const levelFlash = useFlash(mon.level)
+  const wrapperRef = useRef<HTMLSpanElement>(null)
+  const fxRef = useRef<HTMLCanvasElement>(null)
+  useRowEffects(mon, wrapperRef, fxRef)
   const fainted = !mon.isEgg && mon.hp === 0
   const speciesName = species?.name ?? `#${mon.dex}`
   const showSpecies = !mon.isEgg && species && species.name.toLowerCase() !== mon.nickname.toLowerCase()
@@ -44,7 +60,9 @@ export function PartyRow({ mon, spriteHeight, onOpen }: { mon: PartyMon; spriteH
         className="group grid h-full w-full grid-cols-[88px_minmax(0,1fr)] items-center gap-3 rounded-lg border border-line-2 bg-surface-2 py-px pr-3 pl-1 text-left shadow-raise transition-colors duration-150 hover:border-line-3 hover:bg-surface-3"
         aria-label={`${mon.isEgg ? 'Huevo' : `${mon.nickname}, ${speciesName}, nivel ${mon.level}`}. Ver detalle`}
       >
-        <span className={fainted ? 'opacity-50 grayscale' : ''}>
+        <span ref={wrapperRef} className="relative">
+          <canvas ref={fxRef} className="fx-canvas" style={{ width: 88 + 96, height: spriteHeight + 72 }} aria-hidden="true" />
+          <span className={`block transition-[filter,opacity] duration-700 ${fainted ? 'opacity-50 grayscale' : ''}`}>
           {mon.isEgg ? (
             <span className="grid w-[88px] place-items-center" style={{ height: spriteHeight }}>
               <span className="h-9 w-7 rounded-[50%/60%_60%_40%_40%] border border-line-4 bg-[linear-gradient(160deg,#f3f0e0,#c9c3a8)]" aria-hidden="true" />
@@ -52,6 +70,7 @@ export function PartyRow({ mon, spriteHeight, onOpen }: { mon: PartyMon; spriteH
           ) : (
             <PokemonSprite dex={mon.dex} shiny={mon.shiny} form={spriteForm(mon)} width={88} height={spriteHeight} />
           )}
+          </span>
         </span>
         <span className="flex min-w-0 flex-col gap-0.5">
           <span className="flex min-w-0 items-center gap-1.5">

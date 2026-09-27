@@ -1,15 +1,23 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#070808" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#03100c" />
+    <meta name="color-scheme" content="dark light" />
     <meta
       name="description"
-      content="Emulador de GBA en el navegador (mGBA en WebAssembly) que lee la memoria del juego en vivo. Tu ROM nunca sale de tu navegador."
+      content="Emulador de GBA en el navegador (mGBA en WebAssembly) que lee la memoria del juego en vivo. Tu cartucho nunca sale de tu navegador."
     />
     <title>Emerald Lens</title>
+    <script>
+      // Apply the saved or system theme before first paint (same rule as useResolvedTheme)
+      try {
+        const saved = JSON.parse(localStorage.getItem('emerald-lens:settings') || '{}').state?.theme
+        const theme = saved || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
+        document.documentElement.dataset.theme = theme
+      } catch {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

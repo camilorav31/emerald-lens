@@ -26,7 +26,7 @@ function BootSkeleton() {
   return (
     <div className="absolute inset-0 z-3" aria-busy="true">
       {shown && (
-        <div className="skeleton absolute inset-0 grid place-items-center rounded-none bg-[#0a0c0c]">
+        <div className="skeleton absolute inset-0 grid place-items-center rounded-none bg-surface-1">
           <div className="relative flex flex-col items-center gap-2 text-center">
             <GemMark size={28} className="opacity-40" />
             <p className="text-[13px] leading-[18px] text-fg-2">Iniciando el emulador</p>
@@ -42,13 +42,13 @@ function PausePlate() {
   const togglePause = useEmulatorStore((s) => s.togglePause)
   return (
     <m.div
-      className="absolute inset-0 z-3 grid place-items-center bg-[rgb(4_5_5/.62)]"
+      className="absolute inset-0 z-3 grid place-items-center bg-bg-0/60"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, transition: { duration: 0.2 } }}
       exit={{ opacity: 0, transition: { duration: 0.15 } }}
     >
       <m.div
-        className="flex items-center gap-4 rounded-[12px] border border-line-3 bg-[rgb(12_14_14/.94)] px-[18px] py-[14px] shadow-float"
+        className="flex items-center gap-4 rounded-[12px] border border-line-3 bg-float px-[18px] py-[14px] shadow-float"
         initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 500, damping: 36 } }}
       >
@@ -110,7 +110,7 @@ function InputPill({ lens }: { lens: RefObject<HTMLDivElement | null> }) {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0, transition: { duration: 0.2 } }}
             exit={{ opacity: 0, transition: { duration: 0.12 } }}
-            className="flex items-center gap-2 rounded-full border border-line-3 bg-[rgb(7_8_8/.88)] px-3.5 py-2"
+            className="flex items-center gap-2 rounded-full border border-line-3 bg-bg-0/90 px-3.5 py-2"
           >
             <PointerIcon className="text-fg-2" />
             {touchOnly ? (
@@ -129,7 +129,7 @@ function InputPill({ lens }: { lens: RefObject<HTMLDivElement | null> }) {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0, transition: { duration: 0.2 } }}
             exit={{ opacity: 0, transition: { duration: 0.12 } }}
-            className="flex items-center gap-2 rounded-full border border-line-3 bg-[rgb(7_8_8/.88)] px-3.5 py-2 text-[13px] leading-[18px] text-fg-1"
+            className="flex items-center gap-2 rounded-full border border-line-3 bg-bg-0/90 px-3.5 py-2 text-[13px] leading-[18px] text-fg-1"
           >
             Controles activos · <Kbd size="mini">Tab</Kbd> para salir
           </m.div>

@@ -22,7 +22,7 @@ export function PopoverButton({ label, icon, title, children, width = 320 }: Pro
         popoverTarget={id}
         aria-label={label}
         title={label}
-        className="grid size-9 place-items-center rounded-md text-fg-2 transition-colors duration-150 hover:bg-white/5 hover:text-fg-1 pointer-coarse:size-11"
+        className="grid size-9 place-items-center rounded-md text-fg-2 transition-colors duration-150 hover:bg-fg-1/5 hover:text-fg-1 pointer-coarse:size-11"
       >
         {icon}
       </button>
@@ -35,7 +35,7 @@ export function PopoverButton({ label, icon, title, children, width = 320 }: Pro
           setPosition({ top: rect.bottom + 8, right: Math.max(8, window.innerWidth - rect.right) })
         }}
         style={{ top: position.top, right: position.right, width: `min(${width}px, calc(100vw - 16px))` }}
-        className="fixed inset-auto m-0 max-h-[calc(100dvh-80px)] overflow-y-auto rounded-[12px] border border-line-3 bg-[#151818] p-4 text-fg-1 shadow-float"
+        className="fixed inset-auto m-0 max-h-[calc(100dvh-80px)] overflow-y-auto rounded-[12px] border border-line-3 bg-float p-4 text-fg-1 shadow-float"
       >
         <h2 className="section-label mb-3">{title}</h2>
         {children}

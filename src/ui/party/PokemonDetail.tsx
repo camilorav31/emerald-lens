@@ -62,7 +62,7 @@ export function PokemonDetail({ mon, onBack }: { mon: PartyMon; onBack: () => vo
         ref={backRef}
         type="button"
         onClick={onBack}
-        className="flex h-8 w-fit items-center gap-1.5 rounded-md px-2 text-[13px] text-fg-2 transition-colors duration-150 hover:bg-white/5 hover:text-fg-1"
+        className="flex h-8 w-fit items-center gap-1.5 rounded-md px-2 text-[13px] text-fg-2 transition-colors duration-150 hover:bg-fg-1/5 hover:text-fg-1"
       >
         <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5">
           <path d="M10 3L5 8l5 5" strokeLinecap="round" strokeLinejoin="round" />

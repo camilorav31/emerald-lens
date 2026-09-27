@@ -16,10 +16,9 @@ export function ConsoleFrame() {
 
   const status = useEmulatorStore((s) => s.status)
   const inputActive = useEmulatorStore((s) => s.inputActive)
-  const scaleMode = useSettingsStore((s) => s.scaleMode)
   const filter = useSettingsStore((s) => s.filter)
 
-  const scale = useIntegerScale({ probe: probeRef, device: deviceRef, lens: lensRef }, scaleMode)
+  const scale = useIntegerScale({ probe: probeRef, device: deviceRef, lens: lensRef }, 'auto')
   useGameInput(canvasRef)
 
   useEffect(() => {
@@ -30,12 +29,11 @@ export function ConsoleFrame() {
     const canvas = canvasRef.current
     if (!canvas) return
     const { ready, fail } = useEmulatorStore.getState()
-    bootEmulator(canvas).then((emulator) => {
-      const hadPendingFile = useEmulatorStore.getState().pendingFile !== null
-      ready(emulator)
+    bootEmulator(canvas).then(async (emulator) => {
+      await ready(emulator)
       if (import.meta.env.DEV) {
         if (canvas.width !== 240 || canvas.height !== 160) console.warn('[dev] unexpected canvas size', canvas.width, canvas.height)
-        if (!hadPendingFile) void import('../../dev/devRom').then((dev) => dev.autoloadDevRom())
+        void import('../../dev/devRom').then((dev) => dev.autoloadDevRom())
       }
     }, fail)
   }, [])

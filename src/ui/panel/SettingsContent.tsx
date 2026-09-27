@@ -1,14 +1,12 @@
-import { lazy, Suspense, useState, type ReactNode } from 'react'
+import { lazy, Suspense, type ReactNode } from 'react'
 import { SCHEME_LABELS, type ControlScheme } from '../../emulator/keymaps'
-import { hasGame, isSupportedGame, useEmulatorStore } from '../../store/emulatorStore'
+import { hasGame, useEmulatorStore } from '../../store/emulatorStore'
 import { useSettingsStore, type ScreenFilter } from '../../store/settingsStore'
-import type { ScaleMode } from '../game-screen/computeScale'
 import { useScreenScale } from '../game-screen/screenScaleStore'
 import { crtAvailable, lcdAvailable } from '../game-screen/useIntegerScale'
-import { CartridgeIcon, CheckIcon, LockIcon, ShieldCheckIcon, WarningIcon } from '../icons'
-import { Button, Led, Segmented } from '../primitives'
-import { useRomPicker } from '../rom-loader/useRomPicker'
-import { HoldKeys } from './KeyboardLegend'
+import { CheckIcon, LockIcon, ShieldCheckIcon } from '../icons'
+import { Led, Segmented } from '../primitives'
+import { ExtraKeys } from './KeyboardLegend'
 
 const DevTools = import.meta.env.DEV ? lazy(() => import('./DevTools')) : null
 
@@ -21,44 +19,36 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   )
 }
 
-function GameCodeChip({ code }: { code: string | null }) {
-  const base = 'inline-flex h-[22px] items-center gap-1.5 rounded-sm border px-2 text-xs'
-  if (code === null) return <span className={`${base} border-line-2 bg-surface-3 text-fg-2`}>Código no disponible</span>
-  if (isSupportedGame(code)) {
-    return (
-      <span className={`${base} border-accent-line bg-accent-tint text-accent-hi`}>
-        <CheckIcon size={12} />
-        <span className="font-mono font-medium">{code}</span> · soportado
-      </span>
-    )
-  }
+export function Switch({ label, checked, onChange, hint }: { label: string; checked: boolean; onChange: (v: boolean) => void; hint?: string }) {
   return (
-    <span className={`${base} border-warn-line bg-warn-tint text-warn-fg`}>
-      <WarningIcon size={12} />
-      <span className="font-mono font-medium">{code}</span> · no soportado
-    </span>
+    <label className="flex cursor-pointer items-start justify-between gap-3">
+      <span className="min-w-0">
+        <span className="block text-[13px] text-fg-2">{label}</span>
+        {hint && <span className="block text-xs text-fg-3">{hint}</span>}
+      </span>
+      <input type="checkbox" role="switch" checked={checked} onChange={(e) => onChange(e.target.checked)} className="peer sr-only" />
+      <span
+        aria-hidden="true"
+        className="relative mt-0.5 h-5 w-9 flex-none rounded-full border border-line-strong bg-surface-1 transition-colors duration-150 peer-checked:border-accent peer-checked:bg-accent peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-focus after:absolute after:top-0.5 after:left-0.5 after:size-3.5 after:rounded-full after:bg-fg-2 after:transition-[translate,background-color] after:duration-150 peer-checked:after:translate-x-4 peer-checked:after:bg-accent-ink"
+      />
+    </label>
   )
 }
 
 function SessionSection() {
   const status = useEmulatorStore((s) => s.status)
-  const romName = useEmulatorStore((s) => s.romName)
-  const gameCode = useEmulatorStore((s) => s.gameCode)
   const memoryAccess = useEmulatorStore((s) => s.memoryAccess)
   const version = useEmulatorStore((s) => s.emulator?.version)
 
-  if (!hasGame(status) || !romName) {
-    return <p className="text-xs text-fg-3">Sin cartucho insertado.</p>
-  }
+  if (!hasGame(status)) return <p className="text-xs text-fg-3">Sin cartucho insertado.</p>
   return (
     <dl className="grid grid-cols-[72px_minmax(0,1fr)] items-center gap-y-2 text-[13px]">
-      <dt className="text-fg-3">ROM</dt>
-      <dd className="truncate text-fg-1" title={romName}>
-        {romName}
-      </dd>
       <dt className="text-fg-3">Juego</dt>
       <dd>
-        <GameCodeChip code={gameCode} />
+        <span className="inline-flex h-[22px] items-center gap-1.5 rounded-sm border border-accent-line bg-accent-tint px-2 text-xs text-accent-hi">
+          <CheckIcon size={12} />
+          Pokémon Esmeralda · <span className="font-mono font-medium">BPEE</span>
+        </span>
       </dd>
       <dt className="text-fg-3">Memoria</dt>
       <dd className="flex items-center gap-2 text-xs text-fg-2">
@@ -71,39 +61,27 @@ function SessionSection() {
   )
 }
 
-const SCALE_OPTIONS: { value: ScaleMode; label: string }[] = [
-  { value: 'auto', label: 'Auto' },
-  { value: 'integer', label: 'Entera' },
-  { value: 'fit', label: 'Ajustar' },
-]
-
 function ScreenSection() {
-  const { scaleMode, setScaleMode, filter, setFilter } = useSettingsStore()
+  const { filter, setFilter } = useSettingsStore()
   const scale = useScreenScale((s) => s.scale)
   const lcd = lcdAvailable(scale)
   const crt = crtAvailable(scale)
   const blocked = (filter === 'lcd' && !lcd) || (filter === 'crt' && !crt)
-  const filterOptions: { value: ScreenFilter; label: string; disabled?: boolean }[] = [
+  const options: { value: ScreenFilter; label: string; disabled?: boolean }[] = [
     { value: 'none', label: 'Ninguno' },
     { value: 'lcd', label: 'LCD', disabled: !lcd && filter !== 'lcd' },
     { value: 'crt', label: 'CRT', disabled: !crt && filter !== 'crt' },
   ]
   return (
-    <>
-      <div className="space-y-1.5">
-        <p className="text-xs text-fg-3">Escala</p>
-        <Segmented label="Escala" value={scaleMode} options={SCALE_OPTIONS} onChange={setScaleMode} />
-      </div>
-      <div className="space-y-1.5">
-        <p className="text-xs text-fg-3">Filtro</p>
-        <Segmented label="Filtro" value={filter} options={filterOptions} onChange={setFilter} />
-        {blocked && (
-          <p className="text-xs text-pretty text-fg-3">
-            {filter.toUpperCase()} en pausa: necesita escala nítida de {filter === 'lcd' ? 3 : 2}× o más.
-          </p>
-        )}
-      </div>
-    </>
+    <div className="space-y-1.5">
+      <p className="text-xs text-fg-3">Filtro de pantalla</p>
+      <Segmented label="Filtro de pantalla" value={filter} options={options} onChange={setFilter} />
+      {blocked && (
+        <p className="text-xs text-pretty text-fg-3">
+          {filter.toUpperCase()} en pausa: necesita una pantalla nítida de {filter === 'lcd' ? 3 : 2}× o más.
+        </p>
+      )}
+    </div>
   )
 }
 
@@ -113,85 +91,21 @@ function ControlsSection() {
   return (
     <>
       <Segmented label="Esquema de controles" value={controlScheme} options={options} onChange={setControlScheme} />
-      <p className="text-xs text-fg-3">
-        {controlScheme === 'wasd'
-          ? 'Cruceta con W A S D · A = K, B = J, L = Q, R = E.'
-          : 'Cruceta con flechas · A = X, B = Z, L = A, R = S.'}
-      </p>
-      <HoldKeys />
+      <ExtraKeys />
     </>
   )
 }
 
-function RomsSection() {
-  const storedRoms = useEmulatorStore((s) => s.storedRoms)
-  const status = useEmulatorStore((s) => s.status)
-  const romName = useEmulatorStore((s) => s.romName)
-  const start = useEmulatorStore((s) => s.start)
-  const [confirming, setConfirming] = useState<string | null>(null)
-  const picker = useRomPicker()
-  const loaded = hasGame(status)
-
+function PerformanceSection() {
+  const perfMonitor = useSettingsStore((s) => s.perfMonitor)
+  const setPerfMonitor = useSettingsStore((s) => s.setPerfMonitor)
   return (
-    <>
-      <ul className="space-y-1">
-        {storedRoms.map((rom) => {
-          const current = loaded && rom === romName
-          return (
-            <li key={rom} className="rounded-md border border-line-1">
-              <button
-                type="button"
-                aria-current={current || undefined}
-                aria-disabled={current || status === 'booting' || undefined}
-                onClick={() => {
-                  if (current || status === 'booting') return
-                  if (loaded) setConfirming(rom)
-                  else start(rom)
-                }}
-                className="grid h-9 w-full grid-cols-[16px_minmax(0,1fr)_auto] items-center gap-2 rounded-md px-2.5 text-left text-[13px] transition-colors duration-150 hover:bg-surface-3 aria-disabled:cursor-default aria-disabled:hover:bg-transparent"
-              >
-                <CartridgeIcon className="text-fg-3" />
-                <span className="truncate text-fg-1">{rom}</span>
-                <span className="flex items-center gap-1.5 text-xs text-fg-2">
-                  {current ? (
-                    <>
-                      <Led tone="accent" />
-                      En curso
-                    </>
-                  ) : (
-                    <span className="text-accent-hi">Jugar →</span>
-                  )}
-                </span>
-              </button>
-              {confirming === rom && (
-                <div className="space-y-2 px-2.5 pb-2.5">
-                  <p className="text-xs text-fg-2">Se cerrará la partida actual. Guarda dentro del juego antes.</p>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={() => {
-                        setConfirming(null)
-                        start(rom)
-                      }}
-                    >
-                      Cambiar
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => setConfirming(null)}>
-                      Cancelar
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </li>
-          )
-        })}
-      </ul>
-      <Button size="sm" className="w-full" onClick={picker.open} inactive={status === 'booting'}>
-        Cargar otra ROM
-      </Button>
-      {picker.input}
-    </>
+    <Switch
+      label="Monitor de FPS y memoria"
+      hint="Se muestra bajo la pantalla del juego."
+      checked={perfMonitor}
+      onChange={setPerfMonitor}
+    />
   )
 }
 
@@ -207,13 +121,13 @@ export function SettingsContent() {
       <Section title="Controles">
         <ControlsSection />
       </Section>
-      <Section title="Cartuchos en este navegador">
-        <RomsSection />
+      <Section title="Rendimiento">
+        <PerformanceSection />
       </Section>
       <Section title="Privacidad">
         <p className="flex gap-2 text-xs text-pretty text-fg-2">
-          <ShieldCheckIcon className="mt-px flex-none text-accent" />
-          Tu ROM y tus partidas se guardan solo en este navegador (IndexedDB). No se suben ni se comparten.
+          <ShieldCheckIcon className="mt-px flex-none text-accent-hi" />
+          Tu cartucho y tus partidas se guardan solo en este navegador (IndexedDB). No se suben ni se comparten.
         </p>
         <p className="flex items-center gap-1.5 text-xs text-fg-3">
           <LockIcon size={12} />

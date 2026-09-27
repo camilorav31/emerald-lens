@@ -5,10 +5,10 @@ type Size = 'md' | 'sm'
 
 const VARIANTS: Record<Variant, string> = {
   primary:
-    'bg-accent text-accent-ink shadow-raise hover:bg-accent-hi active:bg-accent-lo aria-disabled:bg-surface-disabled aria-disabled:text-fg-disabled aria-disabled:shadow-none',
+    'bg-accent text-accent-ink shadow-raise hover:bg-accent-strong active:bg-accent-lo aria-disabled:bg-surface-disabled aria-disabled:text-fg-disabled aria-disabled:shadow-none',
   secondary:
     'bg-surface-2 text-fg-1 border border-line-2 hover:bg-surface-3 hover:border-line-3 aria-disabled:bg-surface-disabled aria-disabled:text-fg-disabled aria-disabled:border-line-disabled',
-  ghost: 'text-fg-2 hover:text-fg-1 hover:bg-white/5 aria-disabled:text-fg-disabled',
+  ghost: 'text-fg-2 hover:text-fg-1 hover:bg-fg-1/5 aria-disabled:text-fg-disabled',
 }
 const SIZES: Record<Size, string> = {
   md: 'h-10 px-4 pointer-coarse:h-11',
@@ -125,7 +125,7 @@ export function Segmented<T extends string>({ label, value, options, onChange }:
                 ? 'font-medium text-accent-hi'
                 : option.disabled
                   ? 'cursor-not-allowed text-fg-disabled'
-                  : 'text-fg-2 hover:bg-white/4 hover:text-fg-1'
+                  : 'text-fg-2 hover:bg-fg-1/5 hover:text-fg-1'
             }`}
           >
             {option.label}

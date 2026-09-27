@@ -32,7 +32,9 @@ export function useWindowFileDrop() {
       e.preventDefault()
       hide()
       const file = e.dataTransfer?.files[0]
-      if (file) useEmulatorStore.getState().insertFile(file)
+      const { status, insertFile } = useEmulatorStore.getState()
+      // One cartridge per console: drops are only taken before a game is running
+      if (file && (status === 'idle' || status === 'booting')) void insertFile(file)
     }
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && useDropState.getState().dragging) hide()

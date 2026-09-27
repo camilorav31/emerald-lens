@@ -7,12 +7,12 @@ import { useDropState } from './useWindowFileDrop'
 const COPY = {
   idle: {
     title: 'Suelta para insertar el cartucho',
-    body: 'Solo archivos .gba. La ROM se guarda en este navegador (IndexedDB) y nunca se sube.',
+    body: 'Solo Pokémon Esmeralda (USA/Europa). Se guarda en este navegador (IndexedDB) y nunca se sube.',
     tone: 'text-fg-2',
   },
   game: {
-    title: 'Suelta para cambiar de cartucho',
-    body: 'Se cerrará la partida actual. Guarda dentro del juego antes de cambiar.',
+    title: 'Ya hay un cartucho en la consola',
+    body: 'Emerald Lens usa un solo cartucho; el que ya insertaste arranca solo en cada visita.',
     tone: 'text-warn-fg',
   },
   booting: {
@@ -35,7 +35,7 @@ export function DropOverlay() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1, transition: { duration: 0.16 } }}
           exit={{ opacity: 0, transition: { duration: 0.15, ease: [0.4, 0, 1, 1] } }}
-          className="fixed inset-0 z-50 grid place-items-center bg-[rgb(5_6_6/.86)] px-6 backdrop-blur-[8px] supports-[not(backdrop-filter:blur(1px))]:bg-[rgb(5_6_6/.96)]"
+          className="scope-dark fixed inset-0 z-50 grid place-items-center bg-bg-0/85 px-6 text-fg-1 backdrop-blur-[8px] supports-[not(backdrop-filter:blur(1px))]:bg-bg-0"
         >
           <m.div
             className="viewfinder"

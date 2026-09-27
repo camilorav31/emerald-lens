@@ -1,4 +1,5 @@
 import { AppShell, EmulatorView } from './ui/EmulatorView'
+import { useApplyTheme } from './ui/shell/ThemeToggle'
 
 function IsolationRequired() {
   return (
@@ -23,5 +24,6 @@ function IsolationRequired() {
 }
 
 export default function App() {
+  useApplyTheme()
   return window.crossOriginIsolated ? <EmulatorView /> : <IsolationRequired />
 }

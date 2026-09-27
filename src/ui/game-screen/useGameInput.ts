@@ -1,6 +1,7 @@
 import { useEffect, type RefObject } from 'react'
 import { announce } from '../../store/announcer'
 import { useEmulatorStore } from '../../store/emulatorStore'
+import { useSettingsStore } from '../../store/settingsStore'
 
 // Keys that would scroll a stacked layout while playing
 const NAV_KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space', 'PageUp', 'PageDown', 'Home', 'End'])
@@ -69,7 +70,18 @@ export function useGameInput(canvasRef: RefObject<HTMLCanvasElement | null>) {
         focusAdjacentTabbable(canvas, e.shiftKey ? -1 : 1)
         return
       }
+      // The core hardwires hold-F (2x) and hold-R (rewind); keep both away from it. F toggles 2x instead.
+      const key = e.key.toLowerCase()
+      if (key === 'f' || key === 'r') {
+        e.stopPropagation()
+        if (key === 'f' && !e.repeat && useEmulatorStore.getState().inputActive) useSettingsStore.getState().toggleFastForward()
+        return
+      }
       if (useEmulatorStore.getState().inputActive && NAV_KEYS.has(e.code)) e.preventDefault()
+    }
+    const onCanvasKeyUp = (e: KeyboardEvent) => {
+      const key = e.key.toLowerCase()
+      if (key === 'f' || key === 'r') e.stopPropagation()
     }
 
     document.addEventListener('keydown', onKeyDown, true)
@@ -80,6 +92,7 @@ export function useGameInput(canvasRef: RefObject<HTMLCanvasElement | null>) {
     canvas.addEventListener('focus', evaluate)
     canvas.addEventListener('blur', evaluate)
     canvas.addEventListener('keydown', onCanvasKeyDown)
+    canvas.addEventListener('keyup', onCanvasKeyUp)
     const unsubscribe = useEmulatorStore.subscribe((state, prev) => {
       if (state.status !== prev.status) evaluate()
     })
@@ -94,6 +107,7 @@ export function useGameInput(canvasRef: RefObject<HTMLCanvasElement | null>) {
       canvas.removeEventListener('focus', evaluate)
       canvas.removeEventListener('blur', evaluate)
       canvas.removeEventListener('keydown', onCanvasKeyDown)
+      canvas.removeEventListener('keyup', onCanvasKeyUp)
       unsubscribe()
     }
   }, [canvasRef])

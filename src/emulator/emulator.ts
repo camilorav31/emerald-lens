@@ -1,11 +1,11 @@
 import mGBA, { type mGBAEmulator } from '@emerald-lens/mgba-wasm'
-import { ewramReader } from '../memory/ewram'
+import { ramReader } from '../memory/ewram'
 import type { MemoryReader } from '../memory/partyReader'
+import { inspectCartridge, type CartridgeCheck } from './cartridge'
 import { KEYMAPS, type ControlScheme } from './keymaps'
-import { ewramFromStatePng } from './mgbaState'
+import { ramFromStatePng } from './mgbaState'
 
 const GBA_BUTTONS = ['a', 'b', 'select', 'start', 'right', 'left', 'up', 'down', 'r', 'l']
-const ROM_HEADER_GAME_CODE = 0xac
 // Scratch slot for memory snapshots; far from the 1-9 slots players use
 const SNAPSHOT_SLOT = 99
 
@@ -14,9 +14,12 @@ export type MemoryAccess = 'live' | 'snapshot'
 export class Emulator {
   private readonly module: mGBAEmulator
   private romName: string | null = null
+  private fastForward = false
 
   constructor(module: mGBAEmulator) {
     this.module = module
+    // Rewind is not offered; skipping its 600-state ring buffer also saves memory and CPU
+    this.module.setCoreSettings({ rewindEnable: false })
   }
 
   get version(): string {
@@ -32,9 +35,17 @@ export class Emulator {
     return this.module.listRoms().filter((name) => name !== '.' && name !== '..')
   }
 
+  async inspectStored(romName: string): Promise<CartridgeCheck> {
+    try {
+      return await inspectCartridge(this.module.FS.readFile(`${this.module.filePaths().gamePath}/${romName}`))
+    } catch {
+      return { ok: false, reason: 'not-gba' }
+    }
+  }
+
   async importRom(file: File): Promise<string> {
     await new Promise<void>((resolve) => this.module.uploadRom(file, resolve))
-    // /data is IDBFS without autoPersist: sync so the ROM survives reloads
+    // /data is IDBFS without autoPersist: sync so the cartridge survives reloads
     await this.module.FSSync()
     return file.name
   }
@@ -46,23 +57,9 @@ export class Emulator {
       this.module.addCoreCallbacks({
         saveDataUpdatedCallback: () => void this.module.FSSync(),
       })
+      this.applyFastForward()
     }
     return loaded
-  }
-
-  // Read from the stored ROM file so it works with either core
-  gameCode(romName: string): string | null {
-    const path = `${this.module.filePaths().gamePath}/${romName}`
-    const fs = this.module.FS
-    try {
-      const stream = fs.open(path, 'r')
-      const bytes = new Uint8Array(4)
-      fs.read(stream, bytes, 0, 4, ROM_HEADER_GAME_CODE)
-      fs.close(stream)
-      return String.fromCharCode(...bytes)
-    } catch {
-      return null
-    }
   }
 
   pause(): void {
@@ -73,14 +70,26 @@ export class Emulator {
     this.module.resumeGame()
   }
 
-  // The core listens to the keyboard on window, so the UI gates it by focus.
-  // Key-ups are lost while disabled, so held buttons, hold-F fast-forward and hold-R rewind are released.
+  setMuted(muted: boolean): void {
+    this.module.setVolume(muted ? 0 : 1)
+  }
+
+  setFastForward(enabled: boolean): void {
+    this.fastForward = enabled
+    this.applyFastForward()
+  }
+
+  private applyFastForward() {
+    if (this.romName) this.module.setFastForwardMultiplier(this.fastForward ? 2 : 1)
+  }
+
+  // The core listens to the keyboard on window, so the UI gates it by focus. Key-ups are lost while
+  // disabled, so held buttons are released and the chosen speed is re-applied over any stray hold.
   setInputEnabled(enabled: boolean): void {
     this.module.toggleInput(enabled)
     if (enabled) return
     for (const button of GBA_BUTTONS) this.module.buttonUnpress(button)
-    this.module.toggleRewind(false)
-    this.module.setFastForwardMultiplier(this.module.getFastForwardMultiplier())
+    this.applyFastForward()
   }
 
   // loadGame resets bindings to the core defaults, so this runs after every start and on scheme changes
@@ -90,7 +99,7 @@ export class Emulator {
   }
 
   // Live: reads straight from the bus. Snapshot: saveState (which interrupts the core thread, so the copy is
-  // consistent) to a scratch slot, then pull EWRAM out of the state file.
+  // consistent) to a scratch slot, then pull EWRAM + IWRAM out of the state file.
   async captureMemory(): Promise<MemoryReader | null> {
     if (!this.romName) return null
     if (this.memoryAccess === 'live') return { read: (address, length) => this.module.readMemory(address, length) }
@@ -110,8 +119,8 @@ export class Emulator {
         /* already gone */
       }
     }
-    const ewram = await ewramFromStatePng(png)
-    return ewram ? ewramReader(ewram) : null
+    const ram = await ramFromStatePng(png)
+    return ram ? ramReader(ram) : null
   }
 }
 

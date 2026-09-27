@@ -50,7 +50,7 @@ export function Toaster() {
               type="button"
               onClick={dismissError}
               aria-label="Cerrar aviso"
-              className="grid size-7 place-items-center rounded-md text-fg-2 transition-colors duration-150 hover:bg-white/5 hover:text-fg-1"
+              className="grid size-7 place-items-center rounded-md text-fg-2 transition-colors duration-150 hover:bg-fg-1/5 hover:text-fg-1"
             >
               <CloseIcon size={14} />
             </button>
@@ -74,7 +74,7 @@ export function Toaster() {
               type="button"
               onClick={dismissNotice}
               aria-label="Cerrar aviso"
-              className="grid size-7 place-items-center rounded-md text-fg-2 transition-colors duration-150 hover:bg-white/5 hover:text-fg-1"
+              className="grid size-7 place-items-center rounded-md text-fg-2 transition-colors duration-150 hover:bg-fg-1/5 hover:text-fg-1"
             >
               <CloseIcon size={14} />
             </button>

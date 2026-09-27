@@ -1,8 +1,8 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { KEYMAPS, type GbaButton, type KeyBinding } from '../../emulator/keymaps'
+import { KEYMAPS, SCHEME_LABELS, type GbaButton, type KeyBinding } from '../../emulator/keymaps'
 import { useEmulatorStore } from '../../store/emulatorStore'
 import { useSettingsStore } from '../../store/settingsStore'
-import { ArrowIcon, BackspaceIcon, DpadIcon, EnterIcon } from '../icons'
+import { ArrowIcon, BackspaceIcon, EnterIcon } from '../icons'
 import { Kbd, VisuallyHidden } from '../primitives'
 
 // The core resolves keys by keysym (layout-aware), so feedback follows event.key, not event.code
@@ -32,92 +32,102 @@ function usePressedKeys(enabled: boolean) {
 }
 
 const ARROW_LABEL: Record<string, string> = {
-  ArrowUp: 'Flecha arriba',
-  ArrowDown: 'Flecha abajo',
-  ArrowLeft: 'Flecha izquierda',
-  ArrowRight: 'Flecha derecha',
+  ArrowUp: 'flecha arriba',
+  ArrowDown: 'flecha abajo',
+  ArrowLeft: 'flecha izquierda',
+  ArrowRight: 'flecha derecha',
 }
 
-function keyContent(binding: KeyBinding): { content: ReactNode; label?: string } {
+function keyContent(binding: KeyBinding): { content: ReactNode; label: string } {
   if (binding.key.startsWith('Arrow')) {
     const direction = binding.key.slice(5).toLowerCase() as 'up' | 'down' | 'left' | 'right'
     return { content: <ArrowIcon direction={direction} />, label: ARROW_LABEL[binding.key] }
   }
   if (binding.key === 'Enter') return { content: <EnterIcon />, label: 'Enter' }
   if (binding.key === 'Backspace') return { content: <BackspaceIcon />, label: 'Retroceso' }
-  return { content: binding.key.toUpperCase() }
+  return { content: binding.key.toUpperCase(), label: binding.key.toUpperCase() }
 }
 
-const BADGES: { button: GbaButton; label: string; shape: 'round' | 'shoulder' | 'pill'; text: string }[] = [
-  { button: 'a', label: 'Botón A', shape: 'round', text: 'A' },
-  { button: 'b', label: 'Botón B', shape: 'round', text: 'B' },
-  { button: 'l', label: 'Botón L', shape: 'shoulder', text: 'L' },
-  { button: 'r', label: 'Botón R', shape: 'shoulder', text: 'R' },
-  { button: 'start', label: 'Start', shape: 'pill', text: 'Start' },
-  { button: 'select', label: 'Select', shape: 'pill', text: 'Select' },
-]
-
-function BoundKey({ binding, pressed }: { binding: KeyBinding; pressed: ReadonlySet<string> }) {
-  const { content, label } = keyContent(binding)
+function BoundKey({ binding, pressed, size }: { binding: KeyBinding; pressed: boolean; size?: 'mini' }) {
+  const { content } = keyContent(binding)
   return (
-    <Kbd label={label} pressed={pressed.has(binding.key)}>
+    <Kbd pressed={pressed} size={size}>
       {content}
     </Kbd>
   )
 }
 
-// Compact, always-visible legend for the side panel; keys light up while the game has input
+const DPAD: { button: GbaButton; area: string; name: string }[] = [
+  { button: 'up', area: '1 / 2', name: 'Arriba' },
+  { button: 'left', area: '2 / 1', name: 'Izquierda' },
+  { button: 'right', area: '2 / 3', name: 'Derecha' },
+  { button: 'down', area: '3 / 2', name: 'Abajo' },
+]
+
+// Always-visible controls, laid out like a Game Boy Advance; buttons light up while the game has input
 export function ControlsCompact() {
   const scheme = useSettingsStore((s) => s.controlScheme)
   const inputActive = useEmulatorStore((s) => s.inputActive)
   const pressed = usePressedKeys(inputActive)
   const map = KEYMAPS[scheme]
+  const isDown = (button: GbaButton) => pressed.has(map[button].key)
+  const sr = (name: string, button: GbaButton) => <VisuallyHidden>{`${name}: tecla ${keyContent(map[button]).label}. `}</VisuallyHidden>
 
   return (
-    <section aria-label="Controles" className="rounded-lg border border-line-2 bg-panel p-3 shadow-card">
-      <header className="mb-2.5 flex h-5 items-center justify-between [@media(height<860px)]:mb-1.5">
-        <h2 className="section-label">Controles</h2>
-        <span className="text-xs text-fg-3">{scheme === 'wasd' ? 'WASD' : 'Flechas'}</span>
-      </header>
-      {/* Two rows in a 4-column grid: d-pad + A + B, then L + R + Start + Select */}
-      <dl className="grid grid-cols-4 items-center gap-x-2 gap-y-1.5 touch-only:hidden">
-        <div className="col-span-2 flex items-center gap-1.5">
-          <dt className="flex text-fg-2" title="Cruceta">
-            <DpadIcon />
-            <VisuallyHidden>Cruceta</VisuallyHidden>
-          </dt>
-          <dd className="flex gap-1">
-            {(scheme === 'wasd' ? (['up', 'left', 'down', 'right'] as const) : (['up', 'down', 'left', 'right'] as const)).map((d) => (
-              <BoundKey key={d} binding={map[d]} pressed={pressed} />
-            ))}
-          </dd>
+    <section aria-label="Controles" className="gba-pad touch-only:hidden">
+      {(['l', 'r'] as const).map((side) => (
+        <span key={side} className="gba-pad__shoulder" data-side={side} data-pressed={isDown(side) || undefined}>
+          <span aria-hidden="true">{side.toUpperCase()}</span>
+          <BoundKey binding={map[side]} pressed={isDown(side)} size="mini" />
+          {sr(`Gatillo ${side.toUpperCase()}`, side)}
+        </span>
+      ))}
+
+      <div className="gba-pad__body">
+        <div className="gba-dpad" role="group" aria-label="Cruceta">
+          {DPAD.map(({ button, area, name }) => (
+            <span key={button} style={{ gridArea: area }}>
+              <BoundKey binding={map[button]} pressed={isDown(button)} />
+              {sr(name, button)}
+            </span>
+          ))}
         </div>
-        {BADGES.map((b) => (
-          <div key={b.button} className="flex items-center justify-between gap-1">
-            <dt className="flex">
-              <span className="gba-badge" data-shape={b.shape} aria-hidden="true">
-                {b.text}
+
+        <div className="flex min-w-0 flex-col items-center gap-2.5">
+          <div className="gba-center">
+            {(['select', 'start'] as const).map((button) => (
+              <span key={button} className="gba-center__btn">
+                <span className="gba-pill" data-pressed={isDown(button) || undefined} aria-hidden="true" />
+                <span aria-hidden="true">{button}</span>
+                <BoundKey binding={map[button]} pressed={isDown(button)} size="mini" />
+                {sr(button === 'start' ? 'Start' : 'Select', button)}
               </span>
-              <VisuallyHidden>{b.label}</VisuallyHidden>
-            </dt>
-            <dd>
-              <BoundKey binding={map[b.button]} pressed={pressed} />
-            </dd>
+            ))}
           </div>
-        ))}
-      </dl>
-      <p id="legend-note" className="mt-2.5 text-xs text-fg-3 touch-only:mt-0 [@media(height<860px)]:sr-only">
-        <span className="touch-only:hidden">Clic en la pantalla para jugar · Tab para salir</span>
-        <span className="hidden touch-only:inline">Este emulador se controla con un teclado físico.</span>
-      </p>
+          <p id="legend-note" className="text-center text-[10px] leading-3 text-fg-3">
+            {SCHEME_LABELS[scheme]} · <span className="whitespace-nowrap">Tab para salir</span>
+          </p>
+        </div>
+
+        <div className="gba-face">
+          {(['b', 'a'] as const).map((button) => (
+            <span key={button} className="gba-face__btn" data-button={button}>
+              <span className="gba-round" data-pressed={isDown(button) || undefined} aria-hidden="true">
+                {button.toUpperCase()}
+              </span>
+              <BoundKey binding={map[button]} pressed={isDown(button)} size="mini" />
+              {sr(`Botón ${button.toUpperCase()}`, button)}
+            </span>
+          ))}
+        </div>
+      </div>
     </section>
   )
 }
 
-export function HoldKeys() {
+export function ExtraKeys() {
   const rows = [
-    { label: 'Avance rápido (2×)', key: 'F' },
-    { label: 'Rebobinar', key: 'R' },
+    { label: 'Velocidad ×2 (activar / desactivar)', key: 'F' },
     { label: 'Salir de la pantalla', key: 'Tab' },
   ]
   return (
