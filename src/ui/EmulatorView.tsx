@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react'
+import { lazy, Suspense, useEffect, type ReactNode } from 'react'
 import { startPartyPolling } from '../store/partyStore'
 import { DropOverlay } from './drop/DropOverlay'
 import { useWindowFileDrop } from './drop/useWindowFileDrop'
@@ -29,6 +29,8 @@ export function AppShell({ stage, panel }: { stage: ReactNode; panel: ReactNode 
   )
 }
 
+const DemoBar = import.meta.env.DEV ? lazy(() => import('../dev/DemoBar')) : null
+
 export function EmulatorView() {
   useWindowFileDrop()
   useEffect(() => startPartyPolling(), [])
@@ -39,6 +41,11 @@ export function EmulatorView() {
       <Toaster />
       <LiveRegion />
       <Splash />
+      {DemoBar && (
+        <Suspense>
+          <DemoBar />
+        </Suspense>
+      )}
     </>
   )
 }

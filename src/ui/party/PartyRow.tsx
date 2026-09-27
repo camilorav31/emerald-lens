@@ -1,5 +1,6 @@
 import { m } from 'motion/react'
-import { useEffect, useRef, useState, type RefObject } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react'
+import { createPortal } from 'react-dom'
 import type { PartyMon } from '../../memory/gen3/pokemon'
 import { useSpecies } from '../../data/useData'
 import { HpBar, ShinyStar, StatusChip, TypeBadge } from './bits'
@@ -24,24 +25,51 @@ function useFlash(value: number) {
   return flash
 }
 
-// Fires the faint burst when HP drops to 0 and sparkles when the level rises (never on first render)
-function useRowEffects(mon: PartyMon, wrapper: RefObject<HTMLSpanElement | null>, canvas: RefObject<HTMLCanvasElement | null>) {
+type Fx = { kind: 'faint' | 'level'; rect: DOMRect; id: number }
+
+// Detects the faint (HP falls to 0) and level-up transitions; never fires on first render
+function useRowEffects(mon: PartyMon, wrapper: RefObject<HTMLSpanElement | null>) {
+  const [fx, setFx] = useState<Fx | null>(null)
   const previous = useRef({ hp: mon.hp, level: mon.level })
   useEffect(() => {
     const before = previous.current
     previous.current = { hp: mon.hp, level: mon.level }
-    if (!canvas.current || mon.isEgg) return
-    if (before.hp > 0 && mon.hp === 0) explodeSprite(canvas.current, wrapper.current?.querySelector('img') ?? null)
-    else if (mon.level > before.level) sparkle(canvas.current)
-  }, [mon.hp, mon.level, mon.isEgg, wrapper, canvas])
+    const rect = wrapper.current?.getBoundingClientRect()
+    if (!rect || mon.isEgg) return
+    if (before.hp > 0 && mon.hp === 0) setFx({ kind: 'faint', rect, id: performance.now() })
+    else if (mon.level > before.level) setFx({ kind: 'level', rect, id: performance.now() })
+  }, [mon.hp, mon.level, mon.isEgg, wrapper])
+  return [fx, () => setFx(null)] as const
+}
+
+// Mounted only while an effect plays, in a fixed-position portal: particles fly over everything and the
+// oversized canvas never adds scroll overflow to the side panel.
+function FxLayer({ fx, wrapper, onDone }: { fx: Fx; wrapper: RefObject<HTMLSpanElement | null>; onDone: () => void }) {
+  const ref = useRef<HTMLCanvasElement>(null)
+  useLayoutEffect(() => {
+    if (!ref.current) return
+    if (fx.kind === 'faint') explodeSprite(ref.current, wrapper.current?.querySelector('img') ?? null)
+    else sparkle(ref.current)
+    const timer = setTimeout(onDone, 1500)
+    return () => clearTimeout(timer)
+  }, [fx, wrapper, onDone])
+  const { left, top, width, height } = fx.rect
+  return createPortal(
+    <canvas
+      ref={ref}
+      aria-hidden="true"
+      className="pointer-events-none fixed z-45"
+      style={{ left: left - 48, top: top - 36, width: width + 96, height: height + 72 }}
+    />,
+    document.body,
+  )
 }
 
 export function PartyRow({ mon, spriteHeight, onOpen }: { mon: PartyMon; spriteHeight: number; onOpen: () => void }) {
   const species = useSpecies(mon.isEgg ? null : mon.dex)
   const levelFlash = useFlash(mon.level)
   const wrapperRef = useRef<HTMLSpanElement>(null)
-  const fxRef = useRef<HTMLCanvasElement>(null)
-  useRowEffects(mon, wrapperRef, fxRef)
+  const [fx, clearFx] = useRowEffects(mon, wrapperRef)
   const fainted = !mon.isEgg && mon.hp === 0
   const speciesName = species?.name ?? `#${mon.dex}`
   const showSpecies = !mon.isEgg && species && species.name.toLowerCase() !== mon.nickname.toLowerCase()
@@ -61,7 +89,7 @@ export function PartyRow({ mon, spriteHeight, onOpen }: { mon: PartyMon; spriteH
         aria-label={`${mon.isEgg ? 'Huevo' : `${mon.nickname}, ${speciesName}, nivel ${mon.level}`}. Ver detalle`}
       >
         <span ref={wrapperRef} className="relative">
-          <canvas ref={fxRef} className="fx-canvas" style={{ width: 88 + 96, height: spriteHeight + 72 }} aria-hidden="true" />
+          {fx && <FxLayer key={fx.id} fx={fx} wrapper={wrapperRef} onDone={clearFx} />}
           <span className={`block transition-[filter,opacity] duration-700 ${fainted ? 'opacity-50 grayscale' : ''}`}>
           {mon.isEgg ? (
             <span className="grid w-[88px] place-items-center" style={{ height: spriteHeight }}>

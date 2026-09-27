@@ -11,9 +11,11 @@ interface PartyState {
   reading: PartyReading | null
   // bumps only when the decoded party actually changes
   revision: number
+  // a dev-only demo team is shown; live readings are ignored until it ends
+  demo: boolean
 }
 
-export const usePartyStore = create<PartyState>(() => ({ reading: null, revision: 0 }))
+export const usePartyStore = create<PartyState>(() => ({ reading: null, revision: 0, demo: false }))
 
 export interface PerfStats {
   // emulated frames per real second, from the game's own VBlank counter
@@ -57,6 +59,7 @@ async function poll() {
     }
     if (hasTornSlot(reading) && ++tornStreak < TORN_RETRIES) return
     tornStreak = 0
+    if (usePartyStore.getState().demo) return
     const key = JSON.stringify(reading)
     if (key === lastKey) return
     lastKey = key
@@ -64,6 +67,12 @@ async function poll() {
   } finally {
     inFlight = false
   }
+}
+
+// Drops the cached reading so the next poll republishes the live party (used when a demo ends)
+export function resetPartyReading() {
+  lastKey = ''
+  usePartyStore.setState({ reading: null, demo: false })
 }
 
 function schedule() {
@@ -84,7 +93,7 @@ function stop() {
 // Polls while a game runs; a pause freezes the last reading, a new cartridge clears it.
 export function startPartyPolling(): () => void {
   const unsubscribe = useEmulatorStore.subscribe((state, prev) => {
-    if (state.romName !== prev.romName) {
+    if (state.romName !== prev.romName && !usePartyStore.getState().demo) {
       lastKey = ''
       usePartyStore.setState({ reading: null })
     }

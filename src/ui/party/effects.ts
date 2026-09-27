@@ -122,21 +122,23 @@ function drawStar(ctx: CanvasRenderingContext2D, x: number, y: number, r: number
 export function sparkle(canvas: HTMLCanvasElement) {
   if (reducedMotion()) return
   const { width, height } = canvas.getBoundingClientRect()
-  const colors = ['#7debbb', '#3ddc97', '#ffe27a', '#ffffff']
-  const stars: Particle[] = Array.from({ length: 22 }, (_, i) => ({
+  // Light stars vanish on the day theme's white panel, so each theme gets its own palette
+  const day = document.documentElement.dataset.theme === 'light'
+  const colors = day ? ['#067048', '#1fbf7f', '#c98a00', '#0b7d52'] : ['#7debbb', '#3ddc97', '#ffe27a', '#ffffff']
+  const stars: Particle[] = Array.from({ length: 28 }, (_, i) => ({
     x: width / 2 + (Math.random() - 0.5) * width * 0.55,
     y: height / 2 + (Math.random() - 0.2) * height * 0.5,
     vx: (Math.random() - 0.5) * 0.6,
     vy: -0.6 - Math.random() * 1.4,
-    size: 3 + Math.random() * 5,
+    size: 4 + Math.random() * 6,
     color: colors[i % colors.length],
     spin: Math.random() * Math.PI,
   }))
 
   run(canvas, 1300, (ctx, t, dt) => {
     ctx.globalAlpha = Math.max(0, 0.55 - t) * 1.6
-    ctx.strokeStyle = '#3ddc97'
-    ctx.lineWidth = 2
+    ctx.strokeStyle = day ? '#1fbf7f' : '#3ddc97'
+    ctx.lineWidth = 2.5
     ctx.beginPath()
     ctx.arc(width / 2, height / 2, 10 + t * Math.min(width, height) * 0.45, 0, Math.PI * 2)
     ctx.stroke()

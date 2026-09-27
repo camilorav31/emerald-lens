@@ -20,6 +20,7 @@ function Message({ title, body }: { title: string; body?: string }) {
 
 export function PartyPanel() {
   const reading = usePartyStore((s) => s.reading)
+  const demo = usePartyStore((s) => s.demo)
   const status = useEmulatorStore((s) => s.status)
   const [selected, setSelected] = useState<number | null>(null)
 
@@ -39,7 +40,7 @@ export function PartyPanel() {
   }, [slots.length, detail])
 
   let body
-  if (!hasGame(status)) {
+  if (!hasGame(status) && !demo) {
     body = <Message title="Sin cartucho" body="Inserta tu cartucho y tu equipo aparecerá aquí en tiempo real." />
   } else if (!reading) {
     body = (
@@ -108,9 +109,9 @@ export function PartyPanel() {
           <header className="flex h-5 items-center justify-between">
             <h2 className="section-label">Equipo</h2>
             <span className="flex items-center gap-2 text-xs text-fg-2" role="status">
-              {hasGame(status) && reading?.kind === 'ok' && <span className="num font-mono">{slots.length}/6</span>}
+              {(hasGame(status) || demo) && reading?.kind === 'ok' && <span className="num font-mono">{slots.length}/6</span>}
               <Led tone={live && reading?.kind === 'ok' ? 'accent' : undefined} />
-              {!hasGame(status) ? 'Sin juego' : live ? (reading?.kind === 'ok' ? 'En vivo' : 'Leyendo…') : 'Congelado'}
+              {demo ? 'Demo' : !hasGame(status) ? 'Sin juego' : live ? (reading?.kind === 'ok' ? 'En vivo' : 'Leyendo…') : 'Congelado'}
             </span>
           </header>
           {body}
