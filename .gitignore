@@ -1,0 +1,18 @@
+node_modules/
+/dist/
+*.local
+.vite/
+*.log
+
+# Commercial ROMs, saves and states never enter git or the build
+dev-roms/
+*.gba
+*.sav
+*.ss[0-9]
+
+# mGBA core build workspace (source is re-cloned by core/build.sh)
+core/.build/
+scripts/gen3/.cache/
+
+# Local tooling
+.claude/

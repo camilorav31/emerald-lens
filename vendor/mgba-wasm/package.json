@@ -1,0 +1,8 @@
+{
+  "name": "@emerald-lens/mgba-wasm",
+  "version": "2.5.1-memread.1",
+  "description": "thenick775/mgba-wasm built with an exported memory read API. Source: core/build.sh + core/patches.",
+  "main": "./dist/mgba.js",
+  "types": "./dist/mgba.d.ts",
+  "license": "MPL-2.0"
+}

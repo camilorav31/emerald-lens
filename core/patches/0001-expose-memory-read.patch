@@ -1,0 +1,74 @@
+diff --git a/src/platform/wasm/main.c b/src/platform/wasm/main.c
+index 14d9a8a..00314e5 100644
+--- a/src/platform/wasm/main.c
++++ b/src/platform/wasm/main.c
+@@ -468,6 +468,26 @@ EMSCRIPTEN_KEEPALIVE bool loadStateSlot(int slot, int flags) {
+ 	return mCoreLoadState(renderer->core, slot, flags);
+ }
+ 
++#define MEMORY_READ_MAX 0x10000
++static uint8_t memoryReadBuffer[MEMORY_READ_MAX];
++
++// rawRead8 is the debugger view: no bus side effects. The interrupt makes the
++// copy a consistent snapshot between emulated instructions. The core thread is
++// only created on the first main loop tick after loadGame, so it may not exist yet.
++EMSCRIPTEN_KEEPALIVE uint8_t* readMemoryRange(uint32_t address, uint32_t length) {
++	if (!renderer->core || length == 0 || length > MEMORY_READ_MAX) {
++		return NULL;
++	}
++	if (renderer->thread)
++		mCoreThreadInterrupt(renderer->thread);
++	for (uint32_t i = 0; i < length; ++i) {
++		memoryReadBuffer[i] = renderer->core->rawRead8(renderer->core, address + i, -1);
++	}
++	if (renderer->thread)
++		mCoreThreadContinue(renderer->thread);
++	return memoryReadBuffer;
++}
++
+ // Function to ensure all callbacks execute on the main thread
+ EMSCRIPTEN_KEEPALIVE void
+ addCoreCallbacks(void (*alarmCallbackPtr)(void*), void (*coreCrashedCallbackPtr)(void*),
+diff --git a/src/platform/wasm/mgba.d.ts b/src/platform/wasm/mgba.d.ts
+index edad1b1..8838737 100644
+--- a/src/platform/wasm/mgba.d.ts
++++ b/src/platform/wasm/mgba.d.ts
+@@ -431,6 +431,17 @@ declare namespace mGBA {
+      */
+     saveStateSlot(slot: number, flags?: number): boolean;
+ 
++    /**
++     * Reads a byte range from the emulated GBA address space (ex. EWRAM at
++     * 0x02000000, ROM at 0x08000000) without bus side effects. The core thread is
++     * briefly interrupted so the returned bytes are a consistent snapshot.
++     *
++     * @param address - Start address on the GBA bus.
++     * @param length - Number of bytes to read, 1..65536.
++     * @returns A copy of the bytes, or null if no game is loaded or the length is invalid.
++     */
++    readMemory(address: number, length: number): Uint8Array | null;
++
+     /**
+      * Captures a screenshot and writes it to the screenshots directory.
+      *
+diff --git a/src/platform/wasm/pre.js b/src/platform/wasm/pre.js
+index 86df792..6d3521d 100644
+--- a/src/platform/wasm/pre.js
++++ b/src/platform/wasm/pre.js
+@@ -424,6 +424,16 @@ Module.loadStateSlot = (slot, flags) => {
+   return Module.loadStateSlot(slot, flags);
+ };
+ 
++Module.readMemory = (address, length) => {
++  const readMemoryRange = cwrap("readMemoryRange", "number", [
++    "number",
++    "number",
++  ]);
++  const ptr = readMemoryRange(address >>> 0, length >>> 0);
++  // slice copies out of the shared heap so callers never see later frames
++  return ptr ? HEAPU8.slice(ptr, ptr + length) : null;
++};
++
+ Module.autoLoadCheats = () => {
+   const autoLoadCheats = cwrap("autoLoadCheats", "bool", []);
+   return autoLoadCheats();
