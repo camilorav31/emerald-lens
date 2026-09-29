@@ -1,31 +1,13 @@
 import type { ReactNode } from 'react'
 import { hasGame, useEmulatorStore } from '../../store/emulatorStore'
 import { useSettingsStore } from '../../store/settingsStore'
-import { PauseIcon, PlayIcon } from '../icons'
+import { GearIcon, PauseIcon, PlayIcon, SoundIcon } from '../icons'
+import { returnToGame } from '../game-screen/returnToGame'
 import { PartyPanel } from '../party/PartyPanel'
 import { Led } from '../primitives'
 import { ControlsCompact } from './KeyboardLegend'
 import { PopoverButton } from './Popover'
 import { SettingsContent } from './SettingsContent'
-
-function GearIcon() {
-  return (
-    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden="true">
-      <circle cx="8" cy="8" r="2.2" />
-      <path d="M8 1.5v1.8M8 12.7v1.8M14.5 8h-1.8M3.3 8H1.5M12.6 3.4l-1.3 1.3M4.7 11.3l-1.3 1.3M12.6 12.6l-1.3-1.3M4.7 4.7L3.4 3.4" strokeLinecap="round" />
-      <circle cx="8" cy="8" r="4.6" />
-    </svg>
-  )
-}
-
-function SoundIcon({ muted }: { muted: boolean }) {
-  return (
-    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M2.5 6h2.2L8 3.2v9.6L4.7 10H2.5z" />
-      {muted ? <path d="M11 6l3.5 4M14.5 6L11 10" /> : <path d="M10.5 5.5a3.5 3.5 0 0 1 0 5M12.5 3.8a6 6 0 0 1 0 8.4" />}
-    </svg>
-  )
-}
 
 function ToolButton({ label, pressed, onClick, children }: { label: string; pressed?: boolean; onClick: () => void; children: ReactNode }) {
   return (
@@ -42,11 +24,6 @@ function ToolButton({ label, pressed, onClick, children }: { label: string; pres
       {children}
     </button>
   )
-}
-
-// After closing the settings, hand the keyboard back to the game so play resumes without a click
-function returnToGame() {
-  if (useEmulatorStore.getState().status === 'running') document.getElementById('game-screen')?.focus({ preventScroll: true })
 }
 
 const STATUS_TEXT = { booting: 'Iniciando', idle: 'Sin cartucho', running: 'En curso', paused: 'En pausa', error: 'Error' } as const

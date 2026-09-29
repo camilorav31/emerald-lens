@@ -6,13 +6,14 @@ import { useScreenScale } from '../game-screen/screenScaleStore'
 import { crtAvailable, lcdAvailable } from '../game-screen/useIntegerScale'
 import { CheckIcon, LockIcon, ShieldCheckIcon } from '../icons'
 import { Led, Segmented } from '../primitives'
+import { Credits } from '../shell/Footer'
 import { ExtraKeys } from './KeyboardLegend'
 
 const DevTools = import.meta.env.DEV ? lazy(() => import('./DevTools')) : null
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+function Section({ title, children, className = '' }: { title: string; children: ReactNode; className?: string }) {
   return (
-    <section className="space-y-2.5 border-t border-line-1 pt-3 first:border-t-0 first:pt-0">
+    <section className={`space-y-2.5 border-t border-line-1 pt-3 first:border-t-0 first:pt-0 ${className}`}>
       <h3 className="text-[13px] font-medium text-fg-1">{title}</h3>
       {children}
     </section>
@@ -35,8 +36,12 @@ export function Switch({ label, checked, onChange, hint }: { label: string; chec
   )
 }
 
+// Only cartridges the reader can decode ever start, so this covers every code that reaches the panel
+const GAME_NAMES: Record<string, string> = { BPEE: 'Esmeralda' }
+
 function SessionSection() {
   const status = useEmulatorStore((s) => s.status)
+  const gameCode = useEmulatorStore((s) => s.gameCode)
   const memoryAccess = useEmulatorStore((s) => s.memoryAccess)
   const version = useEmulatorStore((s) => s.emulator?.version)
 
@@ -47,7 +52,7 @@ function SessionSection() {
       <dd>
         <span className="inline-flex h-[22px] items-center gap-1.5 rounded-sm border border-accent-line bg-accent-tint px-2 text-xs whitespace-nowrap text-accent-hi">
           <CheckIcon size={12} />
-          Esmeralda ·<span className="font-mono font-medium">BPEE</span>
+          {(gameCode && GAME_NAMES[gameCode]) ?? 'Desconocido'} ·<span className="font-mono font-medium">{gameCode}</span>
         </span>
       </dd>
       <dt className="text-fg-3">Memoria</dt>
@@ -126,7 +131,7 @@ export function SettingsContent() {
           </Section>
         </div>
         <div className="space-y-3 border-t border-line-1 pt-3 @lg:border-t-0 @lg:border-l @lg:pt-0 @lg:pl-6">
-          <Section title="Controles">
+          <Section title="Controles" className="handheld:hidden">
             <ControlsSection />
           </Section>
           <Section title="Privacidad">
@@ -138,6 +143,11 @@ export function SettingsContent() {
               <LockIcon size={12} />
               Usa solo copias de juegos que poseas legalmente.
             </p>
+          </Section>
+          <Section title="Créditos" className="hidden handheld:block">
+            <div className="space-y-1.5 text-xs text-fg-3">
+              <Credits />
+            </div>
           </Section>
           {DevTools && (
             <Suspense>

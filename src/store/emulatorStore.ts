@@ -28,7 +28,7 @@ interface EmulatorState {
   ready: (emulator: Emulator) => Promise<void>
   fail: (error: unknown) => void
   insertFile: (file: File) => Promise<void>
-  start: (romName: string) => void
+  start: (romName: string, gameCode: string) => void
   togglePause: () => void
   setInputActive: (active: boolean) => void
   dismissError: () => void
@@ -72,8 +72,9 @@ export const useEmulatorStore = create<EmulatorState>((set, get) => ({
     const stored = emulator.storedRoms()
     const candidates = [...new Set([settings.lastRom, ...stored].filter((n): n is string => !!n && stored.includes(n)))]
     for (const name of candidates) {
-      if ((await emulator.inspectStored(name)).ok) {
-        get().start(name)
+      const check = await emulator.inspectStored(name)
+      if (check.ok) {
+        get().start(name, check.gameCode)
         return
       }
     }
@@ -103,10 +104,10 @@ export const useEmulatorStore = create<EmulatorState>((set, get) => ({
       return
     }
     set({ importing: false, notice: 'Cartucho guardado en este navegador' })
-    get().start(romName)
+    get().start(romName, check.gameCode)
   },
 
-  start: (romName) => {
+  start: (romName, gameCode) => {
     const { emulator } = get()
     if (!emulator) return
     if (!emulator.start(romName)) {
@@ -116,7 +117,7 @@ export const useEmulatorStore = create<EmulatorState>((set, get) => ({
     const settings = useSettingsStore.getState()
     settings.setLastRom(romName)
     emulator.applyKeymap(settings.controlScheme)
-    set({ status: 'running', romName, gameCode: 'BPEE', error: null })
+    set({ status: 'running', romName, gameCode, error: null })
     announce('Partida iniciada')
   },
 

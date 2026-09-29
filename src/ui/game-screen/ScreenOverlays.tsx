@@ -70,12 +70,13 @@ function PausePlate() {
 function InputPill({ lens }: { lens: RefObject<HTMLDivElement | null> }) {
   const status = useEmulatorStore((s) => s.status)
   const inputActive = useEmulatorStore((s) => s.inputActive)
-  const idle = status === 'running' && !inputActive
+  // Touch devices play with the on-screen pad, so there is no keyboard to invite or explain
+  const touchOnly = typeof window !== 'undefined' && window.matchMedia(TOUCH_ONLY).matches
+  const idle = status === 'running' && !inputActive && !touchOnly
   const armed = useDelayed(idle, 150)
   const [visible, setVisible] = useState(false)
   const [firstHint, setFirstHint] = useState(false)
   const hinted = useRef(false)
-  const touchOnly = typeof window !== 'undefined' && window.matchMedia(TOUCH_ONLY).matches
 
   useEffect(() => {
     if (!armed) {
@@ -83,7 +84,7 @@ function InputPill({ lens }: { lens: RefObject<HTMLDivElement | null> }) {
       return
     }
     setVisible(true)
-    const hide = setTimeout(() => setVisible(false), touchOnly ? 4000 : 5000)
+    const hide = setTimeout(() => setVisible(false), 5000)
     const el = lens.current
     const show = () => setVisible(true)
     el?.addEventListener('pointerenter', show)
@@ -91,15 +92,15 @@ function InputPill({ lens }: { lens: RefObject<HTMLDivElement | null> }) {
       clearTimeout(hide)
       el?.removeEventListener('pointerenter', show)
     }
-  }, [armed, lens, touchOnly])
+  }, [armed, lens])
 
   useEffect(() => {
-    if (!inputActive || hinted.current) return
+    if (!inputActive || hinted.current || touchOnly) return
     hinted.current = true
     setFirstHint(true)
     const timer = setTimeout(() => setFirstHint(false), 2500)
     return () => clearTimeout(timer)
-  }, [inputActive])
+  }, [inputActive, touchOnly])
 
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-3 z-4 flex justify-center px-3" aria-hidden="true">
@@ -113,14 +114,10 @@ function InputPill({ lens }: { lens: RefObject<HTMLDivElement | null> }) {
             className="flex items-center gap-2 rounded-full border border-line-3 bg-bg-0/90 px-3.5 py-2"
           >
             <PointerIcon className="text-fg-2" />
-            {touchOnly ? (
-              <span className="text-[13px] leading-[18px] text-fg-1">Este emulador se controla con teclado</span>
-            ) : (
-              <span className="flex flex-col text-left">
-                <span className="text-[13px] leading-[18px] text-fg-1">Haz clic en la pantalla para jugar</span>
-                <span className="text-xs text-fg-2 [@container_lens_(width<360px)]:hidden">o navega hasta ella con Tab</span>
-              </span>
-            )}
+            <span className="flex flex-col text-left">
+              <span className="text-[13px] leading-[18px] text-fg-1">Haz clic en la pantalla para jugar</span>
+              <span className="text-xs text-fg-2 [@container_lens_(width<360px)]:hidden">o navega hasta ella con Tab</span>
+            </span>
           </m.div>
         )}
         {firstHint && inputActive && (

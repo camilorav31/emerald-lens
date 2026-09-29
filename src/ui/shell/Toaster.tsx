@@ -5,7 +5,7 @@ import { CloseIcon } from '../icons'
 import { Led } from '../primitives'
 
 const POSITION =
-  'fixed z-45 bottom-[calc(16px+env(safe-area-inset-bottom))] left-1/2 w-[calc(100%-24px)] max-w-[360px] -translate-x-1/2 lg:bottom-14 lg:left-auto lg:right-6 lg:w-[360px] lg:translate-x-0'
+  'fixed z-45 bottom-[calc(16px+env(safe-area-inset-bottom))] left-1/2 w-[calc(100%-24px)] max-w-[360px] -translate-x-1/2 touch-only:bottom-[calc(228px+env(safe-area-inset-bottom))] lg:bottom-14 lg:left-auto lg:right-6 lg:w-[360px] lg:translate-x-0'
 
 const enter = { opacity: 0, y: 12 }
 const shown = { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 420, damping: 32 } }

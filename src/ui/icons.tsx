@@ -115,3 +115,17 @@ export function CartridgeGlyph({ size = 64 }: { size?: number }) {
     </svg>
   )
 }
+
+export const GearIcon = (p: IconProps) => (
+  <Icon strokeWidth={1.4} {...p}>
+    <circle cx="8" cy="8" r="2.2" />
+    <path d="M8 1.5v1.8M8 12.7v1.8M14.5 8h-1.8M3.3 8H1.5M12.6 3.4l-1.3 1.3M4.7 11.3l-1.3 1.3M12.6 12.6l-1.3-1.3M4.7 4.7L3.4 3.4" />
+    <circle cx="8" cy="8" r="4.6" />
+  </Icon>
+)
+export const SoundIcon = ({ muted, ...p }: IconProps & { muted: boolean }) => (
+  <Icon strokeWidth={1.4} {...p}>
+    <path d="M2.5 6h2.2L8 3.2v9.6L4.7 10H2.5z" />
+    {muted ? <path d="M11 6l3.5 4M14.5 6L11 10" /> : <path d="M10.5 5.5a3.5 3.5 0 0 1 0 5M12.5 3.8a6 6 0 0 1 0 8.4" />}
+  </Icon>
+)

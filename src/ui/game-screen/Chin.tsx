@@ -2,20 +2,30 @@ import { useEmulatorStore } from '../../store/emulatorStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { PerfHud } from './PerfHud'
 import { Kbd, Led, VisuallyHidden } from '../primitives'
+import { useMediaQuery } from '../useMediaQuery'
 import type { ScreenScale } from './useIntegerScale'
+
+const TOUCH_ONLY = '(hover: none) and (pointer: coarse)'
 
 export function Chin({ scale, showInput = true }: { scale: ScreenScale; showInput?: boolean }) {
   const inputActive = useEmulatorStore((s) => s.inputActive)
   const perfMonitor = useSettingsStore((s) => s.perfMonitor)
   const fastForward = useSettingsStore((s) => s.fastForward)
   const running = useEmulatorStore((s) => s.status === 'running')
+  const touch = useMediaQuery(TOUCH_ONLY)
   const crisp = scale.mode === 'integer'
   const dims = `${scale.physW} × ${scale.physH}`
 
   return (
     <div className="device__chin">
-      <p className="flex min-w-0 items-center gap-2">
-        {showInput && (
+      <p className="flex min-w-0 items-center gap-2 handheld:invisible">
+        {showInput && touch && (
+          <>
+            <Led tone="accent" />
+            <span className="truncate">Controles táctiles</span>
+          </>
+        )}
+        {showInput && !touch && (
           <>
             <Led tone={inputActive ? 'accent' : undefined} />
             {inputActive ? (
@@ -35,11 +45,11 @@ export function Chin({ scale, showInput = true }: { scale: ScreenScale; showInpu
       {perfMonitor ? (
         <PerfHud />
       ) : (
-        <span className="chin__engraving" aria-hidden="true">
+        <span className="chin__engraving handheld:inline" aria-hidden="true">
           Emerald Lens
         </span>
       )}
-      <p className="num flex items-center gap-2 justify-self-end whitespace-nowrap" title="Píxeles físicos de tu pantalla">
+      <p className="num flex items-center gap-2 justify-self-end whitespace-nowrap handheld:invisible" title="Píxeles físicos de tu pantalla">
         {fastForward && running && (
           <span className="rounded-xs bg-accent px-1.5 py-px font-mono text-[11px] font-semibold text-accent-ink" role="status">
             ×2

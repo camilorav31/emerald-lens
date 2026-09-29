@@ -3,6 +3,8 @@
 @custom-variant touch-only (@media (hover: none) and (pointer: coarse));
 @custom-variant pointer-coarse (@media (pointer: coarse));
 @custom-variant short (@media (height < 820px));
+/* Portrait phones: the app becomes a handheld (party strip, screen, controls) that never scrolls */
+@custom-variant handheld (@media (hover: none) and (pointer: coarse) and (width < 64rem) and (orientation: portrait));
 
 @custom-variant light (&:where([data-theme='light'], [data-theme='light'] *));
 
@@ -841,6 +843,202 @@
     opacity: 1;
   }
 
+  /* ---------- on-screen gamepad (touch devices) ---------- */
+  .touch-pad {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 40;
+    height: calc(212px + env(safe-area-inset-bottom));
+    padding: 8px 14px calc(12px + env(safe-area-inset-bottom));
+    --pad-col: clamp(112px, 34vw, 132px);
+    --pad-arm: calc(var(--pad-col) / 3);
+    grid-template-columns: var(--pad-col) minmax(0, 1fr) var(--pad-col);
+    grid-template-rows: 30px minmax(0, 1fr);
+    column-gap: 8px;
+    background: linear-gradient(180deg, var(--bezel-hi), var(--bezel-mid) 60%, var(--bezel-lo));
+    border-top: 1px solid var(--line-3);
+    box-shadow: 0 -8px 24px rgb(0 0 0 / 0.25);
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+  .touch-pad__btn {
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--line-3);
+    border-bottom: 2px solid var(--kbd-edge);
+    background: linear-gradient(180deg, var(--keycap-top), var(--keycap));
+    color: var(--fg-1);
+    font: 700 13px/1 var(--font-sans);
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      background 90ms var(--ease-out),
+      color 90ms var(--ease-out),
+      translate 90ms var(--ease-out);
+  }
+  .touch-pad__btn[data-pressed] {
+    background: var(--accent);
+    color: var(--accent-ink);
+    translate: 0 1px;
+  }
+  .touch-pad__shoulder {
+    grid-row: 1;
+    width: 88px;
+    height: 30px;
+    color: var(--fg-2);
+  }
+  .touch-pad__shoulder--l {
+    grid-column: 1;
+    justify-self: start;
+    border-radius: 16px 6px 4px 4px;
+  }
+  .touch-pad__shoulder--r {
+    grid-column: 3;
+    justify-self: end;
+    border-radius: 6px 16px 4px 4px;
+  }
+  .touch-pad__dpad {
+    position: relative;
+    grid-row: 2;
+    grid-column: 1;
+    align-self: center;
+    width: var(--pad-col);
+    height: var(--pad-col);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .touch-pad__dpad::before,
+  .touch-pad__dpad::after {
+    content: '';
+    position: absolute;
+    border-radius: 10px;
+    background: var(--well);
+    border: 1px solid var(--line-2);
+    box-shadow: var(--sh-raise);
+  }
+  .touch-pad__dpad::before {
+    inset: 0 var(--pad-arm);
+  }
+  .touch-pad__dpad::after {
+    inset: var(--pad-arm) 0;
+  }
+  .touch-pad__arrow {
+    position: absolute;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: var(--pad-arm);
+    height: var(--pad-arm);
+    color: var(--fg-3);
+    pointer-events: none;
+    transition: color 90ms var(--ease-out);
+  }
+  .touch-pad__arrow[data-pressed] {
+    color: var(--accent);
+  }
+  .touch-pad__arrow[data-dir='up'] {
+    top: 0;
+    left: var(--pad-arm);
+  }
+  .touch-pad__arrow[data-dir='down'] {
+    bottom: 0;
+    left: var(--pad-arm);
+  }
+  .touch-pad__arrow[data-dir='left'] {
+    left: 0;
+    top: var(--pad-arm);
+  }
+  .touch-pad__arrow[data-dir='right'] {
+    right: 0;
+    top: var(--pad-arm);
+  }
+  .touch-pad__center {
+    grid-row: 2;
+    grid-column: 2;
+    align-self: end;
+    justify-self: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 10px;
+  }
+  .touch-pad__pill {
+    width: min(64px, 100%);
+    height: 30px;
+    border-radius: 999px;
+    color: var(--fg-2);
+    font: 600 10px/1 var(--font-sans);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .touch-pad__face {
+    position: relative;
+    grid-row: 2;
+    grid-column: 3;
+    align-self: center;
+    width: var(--pad-col);
+    height: var(--pad-col);
+  }
+  .touch-pad__round {
+    position: absolute;
+    width: calc(var(--pad-col) * 0.48);
+    height: calc(var(--pad-col) * 0.48);
+    border-radius: 999px;
+    font-size: 18px;
+  }
+  .touch-pad__round--a {
+    right: 0;
+    top: 14px;
+  }
+  .touch-pad__round--b {
+    left: 0;
+    bottom: 14px;
+  }
+
+  /* docked in the page flow (portrait phones) instead of fixed over it */
+  .touch-pad--dock {
+    position: relative;
+    inset: auto;
+    z-index: 0;
+    height: auto;
+    min-height: min(38dvh, 320px);
+    row-gap: 8px;
+    grid-template-rows: 30px minmax(0, 1fr);
+    padding: 10px 14px calc(14px + env(safe-area-inset-bottom));
+    border-radius: 26px 26px 0 0;
+    box-shadow: none;
+  }
+  .touch-pad[data-idle] :is(.touch-pad__dpad, .touch-pad__shoulder, .touch-pad__center, .touch-pad__face) {
+    opacity: 0.5;
+  }
+  .touch-pad__utils {
+    grid-row: 1;
+    grid-column: 1 / -1;
+    justify-self: center;
+    align-self: center;
+    display: flex;
+    gap: 8px;
+  }
+  .touch-pad__util {
+    width: 30px;
+    height: 30px;
+    border-radius: 999px;
+    color: var(--fg-2);
+    font: 700 11px/1 var(--font-sans);
+  }
+  .touch-pad__util[aria-pressed='true'] {
+    color: var(--accent-text);
+    border-color: var(--accent-line);
+  }
+  .touch-pad--dock .touch-pad__dpad,
+  .touch-pad--dock .touch-pad__face {
+    grid-row: 2;
+  }
+  .touch-pad--dock .touch-pad__center {
+    grid-row: 2;
+  }
+
   /* ---------- first-load splash ---------- */
   .splash {
     position: fixed;
@@ -963,6 +1161,17 @@
     visibility: hidden;
   }
   @media (width >= 64rem) {
+    .stage {
+      height: 100%;
+      min-height: 0;
+      align-items: center;
+    }
+    .stage__probe {
+      inset: 0;
+      height: auto;
+    }
+  }
+  @media (hover: none) and (pointer: coarse) and (width < 64rem) and (orientation: portrait) {
     .stage {
       height: 100%;
       min-height: 0;

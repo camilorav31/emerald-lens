@@ -10,11 +10,10 @@ const SEEN_KEY = 'emerald-lens:splash-seen'
 const MIN_MS_FIRST_VISIT = 4500
 const MIN_MS_RETURNING = 500
 
+// Read only: marking the session as seen is a side effect, so it happens in an effect
 function firstVisitThisSession() {
   try {
-    const seen = sessionStorage.getItem(SEEN_KEY)
-    sessionStorage.setItem(SEEN_KEY, '1')
-    return !seen
+    return !sessionStorage.getItem(SEEN_KEY)
   } catch {
     return false
   }
@@ -44,6 +43,14 @@ export function Splash() {
   const status = useEmulatorStore((s) => s.status)
   const [firstVisit] = useState(firstVisitThisSession)
   const [minElapsed, setMinElapsed] = useState(false)
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(SEEN_KEY, '1')
+    } catch {
+      /* storage unavailable: every load counts as a return visit */
+    }
+  }, [])
 
   useEffect(() => {
     const timer = setTimeout(() => setMinElapsed(true), firstVisit ? MIN_MS_FIRST_VISIT : MIN_MS_RETURNING)

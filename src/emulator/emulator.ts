@@ -2,7 +2,7 @@ import mGBA, { type mGBAEmulator } from '@emerald-lens/mgba-wasm'
 import { ramReader } from '../memory/ewram'
 import type { MemoryReader } from '../memory/partyReader'
 import { inspectCartridge, type CartridgeCheck } from './cartridge'
-import { KEYMAPS, type ControlScheme } from './keymaps'
+import { KEYMAPS, type ControlScheme, type GbaButton } from './keymaps'
 import { ramFromStatePng } from './mgbaState'
 
 const GBA_BUTTONS = ['a', 'b', 'select', 'start', 'right', 'left', 'up', 'down', 'r', 'l']
@@ -90,6 +90,13 @@ export class Emulator {
     if (enabled) return
     for (const button of GBA_BUTTONS) this.module.buttonUnpress(button)
     this.applyFastForward()
+  }
+
+  // On-screen (touch) controls: drives the core's key mask directly, independent of keyboard focus
+  setButton(button: GbaButton, pressed: boolean): void {
+    if (!this.romName) return
+    if (pressed) this.module.buttonPress(button)
+    else this.module.buttonUnpress(button)
   }
 
   // loadGame resets bindings to the core defaults, so this runs after every start and on scheme changes
