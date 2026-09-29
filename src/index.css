@@ -2,6 +2,7 @@
 
 @custom-variant touch-only (@media (hover: none) and (pointer: coarse));
 @custom-variant pointer-coarse (@media (pointer: coarse));
+@custom-variant short (@media (height < 820px));
 
 @custom-variant light (&:where([data-theme='light'], [data-theme='light'] *));
 
@@ -694,6 +695,12 @@
     background: linear-gradient(180deg, var(--bezel-hi), var(--bezel-mid) 55%, var(--bezel-lo));
     border: 1px solid var(--line-2);
     box-shadow: var(--sh-card);
+  }
+  @media (height < 820px) {
+    .gba-pad {
+      margin-top: 8px;
+      padding: 12px 14px 8px;
+    }
   }
   .gba-pad__shoulder {
     position: absolute;

@@ -45,9 +45,9 @@ function SessionSection() {
     <dl className="grid grid-cols-[72px_minmax(0,1fr)] items-center gap-y-2 text-[13px]">
       <dt className="text-fg-3">Juego</dt>
       <dd>
-        <span className="inline-flex h-[22px] items-center gap-1.5 rounded-sm border border-accent-line bg-accent-tint px-2 text-xs text-accent-hi">
+        <span className="inline-flex h-[22px] items-center gap-1.5 rounded-sm border border-accent-line bg-accent-tint px-2 text-xs whitespace-nowrap text-accent-hi">
           <CheckIcon size={12} />
-          Pokémon Esmeralda · <span className="font-mono font-medium">BPEE</span>
+          Esmeralda ·<span className="font-mono font-medium">BPEE</span>
         </span>
       </dd>
       <dt className="text-fg-3">Memoria</dt>
@@ -109,38 +109,45 @@ function PerformanceSection() {
   )
 }
 
+// Two columns when the popover is wide enough, so the whole thing fits short screens without scrolling
 export function SettingsContent() {
   return (
-    <div className="space-y-3">
-      <Section title="Sesión">
-        <SessionSection />
-      </Section>
-      <Section title="Pantalla">
-        <ScreenSection />
-      </Section>
-      <Section title="Controles">
-        <ControlsSection />
-      </Section>
-      <Section title="Rendimiento">
-        <PerformanceSection />
-      </Section>
-      <Section title="Privacidad">
-        <p className="flex gap-2 text-xs text-pretty text-fg-2">
-          <ShieldCheckIcon className="mt-px flex-none text-accent-hi" />
-          Tu cartucho y tus partidas se guardan solo en este navegador (IndexedDB). No se suben ni se comparten.
-        </p>
-        <p className="flex items-center gap-1.5 text-xs text-fg-3">
-          <LockIcon size={12} />
-          Usa solo copias de juegos que poseas legalmente.
-        </p>
-      </Section>
-      {DevTools && (
-        <Suspense>
-          <Section title="Desarrollo">
-            <DevTools />
+    <div className="@container">
+      <div className="flex flex-col gap-3 @lg:grid @lg:grid-cols-2 @lg:gap-x-6">
+        <div className="space-y-3">
+          <Section title="Sesión">
+            <SessionSection />
           </Section>
-        </Suspense>
-      )}
+          <Section title="Pantalla">
+            <ScreenSection />
+          </Section>
+          <Section title="Rendimiento">
+            <PerformanceSection />
+          </Section>
+        </div>
+        <div className="space-y-3 border-t border-line-1 pt-3 @lg:border-t-0 @lg:border-l @lg:pt-0 @lg:pl-6">
+          <Section title="Controles">
+            <ControlsSection />
+          </Section>
+          <Section title="Privacidad">
+            <p className="flex gap-2 text-xs text-pretty text-fg-2">
+              <ShieldCheckIcon className="mt-px flex-none text-accent-hi" />
+              Tu cartucho y tus partidas se guardan solo en este navegador (IndexedDB). No se suben ni se comparten.
+            </p>
+            <p className="flex items-center gap-1.5 text-xs text-fg-3">
+              <LockIcon size={12} />
+              Usa solo copias de juegos que poseas legalmente.
+            </p>
+          </Section>
+          {DevTools && (
+            <Suspense>
+              <Section title="Desarrollo">
+                <DevTools />
+              </Section>
+            </Suspense>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

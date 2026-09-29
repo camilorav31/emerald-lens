@@ -62,7 +62,7 @@ function Toolbar() {
   const tone = status === 'running' ? 'accent' : status === 'booting' ? 'warn' : status === 'error' ? 'err' : undefined
 
   return (
-    <div className="flex h-10 items-center gap-1">
+    <div className="flex h-10 items-center gap-1 short:h-9">
       <p className="flex min-w-0 flex-1 items-center gap-2 text-[13px]" role="status">
         <Led tone={tone} />
         <span className="truncate text-fg-2">{STATUS_TEXT[status]}</span>
@@ -80,7 +80,7 @@ function Toolbar() {
           </ToolButton>
         </>
       )}
-      <PopoverButton label="Ajustes" title="Ajustes" icon={<GearIcon />} onClose={returnToGame}>
+      <PopoverButton label="Ajustes" title="Ajustes" icon={<GearIcon />} width={560} onClose={returnToGame}>
         <SettingsContent />
       </PopoverButton>
     </div>
