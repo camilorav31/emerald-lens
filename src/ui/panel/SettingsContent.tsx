@@ -55,13 +55,13 @@ function SessionSection() {
           {(gameCode && GAME_NAMES[gameCode]) ?? 'Desconocido'} ·<span className="font-mono font-medium">{gameCode}</span>
         </span>
       </dd>
-      <dt className="text-fg-3">Memoria</dt>
-      <dd className="flex items-center gap-2 text-xs text-fg-2">
+      <dt className="text-fg-3 handheld:hidden">Memoria</dt>
+      <dd className="flex items-center gap-2 text-xs text-fg-2 handheld:hidden">
         <Led tone={memoryAccess === 'live' ? 'accent' : 'warn'} />
         {memoryAccess === 'live' ? 'Lectura directa (core parcheado)' : 'Snapshots de save state (core sin parchear)'}
       </dd>
-      <dt className="text-fg-3">Núcleo</dt>
-      <dd className="font-mono text-xs text-fg-2">{version}</dd>
+      <dt className="text-fg-3 handheld:hidden">Núcleo</dt>
+      <dd className="font-mono text-xs text-fg-2 handheld:hidden">{version}</dd>
     </dl>
   )
 }

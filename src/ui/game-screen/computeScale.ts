@@ -18,12 +18,14 @@ export interface ScaleResult {
 
 // Integer multiples are counted in device pixels so HiDPI screens stay pixel-perfect.
 // Auto only falls back to a fractional fit when the integer size would waste too much space.
-export function computeScale(availW: number, availH: number, dpr: number, mode: ScaleMode = 'auto'): ScaleResult {
+// `fill` is how much of the fractional fit an integer size must reach; compact layouts ask for more so a
+// dpr-3 phone does not leave 20-30px of bezel on each side.
+export function computeScale(availW: number, availH: number, dpr: number, mode: ScaleMode = 'auto', fill = FILL): ScaleResult {
   const fitCss = Math.max(0, Math.min(availW / GBA_W, availH / GBA_H))
   const k = Math.min(Math.floor(fitCss * dpr + EPS), Math.floor(MAX_CSS * dpr + EPS))
   const intCss = k / dpr
   const useInt =
-    mode === 'integer' ? k >= 1 : mode === 'fit' ? false : k >= 1 && (intCss >= 2 || intCss / fitCss >= FILL)
+    mode === 'integer' ? k >= 1 : mode === 'fit' ? false : k >= 1 && (intCss >= 2 || intCss / fitCss >= fill)
 
   if (useInt) {
     return { mode: 'integer', dev: k, cssW: (GBA_W * k) / dpr, cssH: (GBA_H * k) / dpr, physW: GBA_W * k, physH: GBA_H * k }

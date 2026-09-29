@@ -1,5 +1,8 @@
 import { useSyncExternalStore } from 'react'
 
+// Portrait phones: the app becomes a handheld. Mirrors the `handheld` variant in index.css.
+export const HANDHELD_QUERY = '(hover: none) and (pointer: coarse) and (width < 64rem) and (orientation: portrait)'
+
 export function useMediaQuery(query: string): boolean {
   return useSyncExternalStore(
     (onChange) => {

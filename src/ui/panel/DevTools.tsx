@@ -19,7 +19,7 @@ export default function DevTools() {
 
       <div className="space-y-2 rounded-md border border-dashed border-warn-line p-2.5">
         <p className="text-xs text-fg-2">
-          Equipo ficticio para probar las animaciones. Los controles aparecen en una barra abajo; mientras está activo, el panel ignora la memoria del juego.
+          Equipo ficticio para probar las animaciones. Los controles aparecen en una barra flotante (bajo el equipo en el móvil); mientras está activo, el panel ignora la memoria del juego.
         </p>
         {demo ? (
           <Button size="sm" variant="ghost" className="w-full" onClick={stopDemoParty}>

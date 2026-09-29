@@ -8,6 +8,7 @@ import { PokemonSprite } from './PokemonSprite'
 import { useMediaQuery } from '../useMediaQuery'
 import { spriteForm } from './PartyRow'
 import { RadarChart, STAT_LABELS } from './RadarChart'
+import { useFlash } from './useMonEffects'
 
 const TABLE_ORDER = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const
 
@@ -51,6 +52,7 @@ export function PokemonDetail({ mon, onBack }: { mon: PartyMon; onBack: () => vo
   useEffect(() => backRef.current?.focus({ preventScroll: true }), [])
   const fainted = mon.hp === 0
   const short = useMediaQuery(SHORT_VIEWPORT)
+  const levelFlash = useFlash(mon.level)
   const spriteW = short ? 104 : 120
   const spriteH = short ? 88 : 112
   const radarSize = short ? 116 : 132
@@ -83,7 +85,7 @@ export function PokemonDetail({ mon, onBack }: { mon: PartyMon; onBack: () => vo
         style={{ gridTemplateColumns: `${spriteW}px minmax(0,1fr)` }}
       >
         <span
-          className={`grid place-items-end justify-center rounded-md bg-[radial-gradient(60%_40%_at_50%_92%,rgb(0_0_0/.45),transparent)] ${fainted ? 'opacity-50 grayscale' : ''}`}
+          className={`grid place-items-end justify-center rounded-md bg-[radial-gradient(60%_40%_at_50%_92%,var(--sprite-shadow),transparent)] ${fainted ? 'opacity-50 grayscale' : ''}`}
           style={{ height: spriteH }}
         >
           <PokemonSprite dex={mon.dex} shiny={mon.shiny} form={spriteForm(mon)} width={spriteW} height={spriteH} />
@@ -96,7 +98,7 @@ export function PokemonDetail({ mon, onBack }: { mon: PartyMon; onBack: () => vo
           <p className="flex items-center gap-2 text-xs text-fg-2">
             <span className="truncate">{species?.name ?? `#${mon.dex}`}</span>
             <span className="num font-mono text-fg-3">#{String(mon.dex).padStart(3, '0')}</span>
-            <span className="num ml-auto font-mono text-fg-1">Nv. {mon.level}</span>
+            <span className={`num ml-auto font-mono transition-colors duration-300 ${levelFlash ? 'text-accent-hi' : 'text-fg-1'}`}>Nv. {mon.level}</span>
           </p>
           <p className="flex flex-wrap gap-1">{species?.types.map((t) => <TypeBadge key={t} type={t} />)}</p>
           <div className="flex items-center gap-2">

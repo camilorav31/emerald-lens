@@ -61,7 +61,7 @@ export function HpBar({ hp, maxHp, showNumbers = true }: { hp: number; maxHp: nu
         aria-valuenow={hp}
       >
         <span
-          className="absolute inset-y-0 left-0 rounded-full transition-[width,background-color] duration-500 ease-out"
+          className="absolute inset-y-0 left-0 rounded-full shadow-[inset_0_0_0_1px_rgb(var(--ink)/0.25)] transition-[width,background-color] duration-500 ease-out"
           style={{ width: `${ratio * 100}%`, background: hpTone(hp, maxHp) }}
         />
       </span>

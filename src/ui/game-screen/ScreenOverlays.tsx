@@ -43,12 +43,13 @@ function PausePlate() {
   return (
     <m.div
       className="absolute inset-0 z-3 grid place-items-center bg-bg-0/60"
+      onClick={(e) => e.target === e.currentTarget && togglePause()}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, transition: { duration: 0.2 } }}
       exit={{ opacity: 0, transition: { duration: 0.15 } }}
     >
       <m.div
-        className="flex items-center gap-4 rounded-[12px] border border-line-3 bg-float px-[18px] py-[14px] shadow-float"
+        className="flex items-center gap-4 rounded-[12px] border border-line-3 bg-float px-[18px] py-[14px] shadow-float [@container_lens_(width<360px)]:flex-col [@container_lens_(width<360px)]:gap-2.5 [@container_lens_(width<360px)]:px-4 [@container_lens_(width<360px)]:py-3"
         initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 500, damping: 36 } }}
       >
@@ -60,7 +61,7 @@ function PausePlate() {
           En pausa
         </p>
         <Button variant="primary" size="sm" icon={<PlayIcon />} onClick={togglePause}>
-          <span className="[@container_lens_(width<360px)]:sr-only">Reanudar</span>
+          Reanudar
         </Button>
       </m.div>
     </m.div>
@@ -160,7 +161,7 @@ function CoreError() {
 function PowerOnCover() {
   return (
     <m.div
-      className="pointer-events-none absolute inset-0 z-3 bg-black"
+      className="pointer-events-none absolute inset-0 z-3 bg-lens-idle"
       initial={{ opacity: 1 }}
       animate={{ opacity: 0, transition: { duration: 0.3 } }}
       aria-hidden="true"

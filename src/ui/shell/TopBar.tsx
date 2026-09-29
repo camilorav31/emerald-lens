@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useEmulatorStore } from '../../store/emulatorStore'
 import { GemMark, Wordmark } from '../brand/GemMark'
+import { HANDHELD_QUERY, useMediaQuery } from '../useMediaQuery'
 import { ThemeToggle } from './ThemeToggle'
 
 export function TopBar() {
   const [scrolled, setScrolled] = useState(false)
   const live = useEmulatorStore((s) => s.status === 'running')
+  // On the handheld the brand cannot be a link: a mis-tap would reload the page and drop the running game
+  const handheld = useMediaQuery(HANDHELD_QUERY)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 0)
@@ -23,15 +26,22 @@ export function TopBar() {
 
   return (
     <header
-      className={`sticky top-0 z-30 h-(--topbar-h) border-b transition-[background-color,border-color] duration-150 ${surface}`}
+      className={`sticky top-0 z-30 h-(--topbar-h) handheld:h-[calc(var(--topbar-h)+env(safe-area-inset-top))] handheld:pt-[env(safe-area-inset-top)] border-b transition-[background-color,border-color] duration-150 ${surface}`}
       data-scrolled={scrolled || undefined}
     >
       <div className="mx-auto flex h-full max-w-[2400px] items-center justify-between px-3 md:px-6 lg:px-4 xl:px-5 2xl:px-8">
-        <a href="/" className="brand-link flex items-center gap-2 rounded-[8px]">
-          <GemMark />
-          <Wordmark />
-        </a>
-        <div className="flex items-center gap-2">
+        {handheld ? (
+          <div className="flex items-center gap-2">
+            <GemMark />
+            <Wordmark />
+          </div>
+        ) : (
+          <a href="/" className="brand-link flex items-center gap-2 rounded-[8px]">
+            <GemMark />
+            <Wordmark />
+          </a>
+        )}
+        <div className="flex items-center gap-2 handheld:-mr-3">
         {import.meta.env.DEV && (
           <span
             className="inline-flex h-[22px] items-center rounded-sm border border-warn-line bg-warn-tint px-1.5 font-mono text-[11px] font-medium text-warn-fg"

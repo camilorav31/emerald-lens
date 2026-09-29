@@ -28,6 +28,14 @@ describe('computeScale', () => {
     expect(computeScale(w, h, dpr, mode)).toMatchObject(expected)
   })
 
+  it('asks a compact layout for a tighter integer fit', () => {
+    // 430x932 @3: the 4x integer size would be 84% of the fit, so fit wins at fill 0.9 but integer wins at the default
+    expect(computeScale(382, 704, 3, 'auto', 0.9)).toMatchObject({ mode: 'fit', physW: 1146, physH: 764 })
+    expect(computeScale(382, 704, 3)).toMatchObject({ mode: 'integer', dev: 4 })
+    // 390x844 @3: 94% of the fit, stays integer
+    expect(computeScale(342, 616, 3, 'auto', 0.9)).toMatchObject({ mode: 'integer', dev: 4 })
+  })
+
   it('keeps 1280x720 @150% integer at 4 device px per GBA px', () => {
     const r = computeScale(818, 514, 1.5)
     expect(r).toMatchObject({ mode: 'integer', dev: 4, physW: 960, physH: 640 })

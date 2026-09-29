@@ -9,6 +9,8 @@ export interface ScreenScale extends ScaleResult {
 
 const INITIAL: ScreenScale = { mode: 'integer', dev: 1, cssW: 240, cssH: 160, physW: 240, physH: 160, dpr: 1, measured: false }
 const COMPACT_QUERY = '(width < 48rem)'
+// Compact screens are small enough that a fractional scale is worth a bigger picture (LCD/CRT need integer)
+const COMPACT_FILL = 0.9
 
 interface Refs {
   probe: RefObject<HTMLElement | null>
@@ -28,10 +30,11 @@ export function useIntegerScale({ probe, device, lens }: Refs, scaleMode: ScaleM
 
     const update = () => {
       const dpr = window.devicePixelRatio || 1
-      const chrome = window.matchMedia(COMPACT_QUERY).matches ? COMPACT_CHROME : REGULAR_CHROME
+      const compact = window.matchMedia(COMPACT_QUERY).matches
+      const chrome = compact ? COMPACT_CHROME : REGULAR_CHROME
       const { w: chromeW, h: chromeH } = chromeSize(chrome)
       const rect = probeEl.getBoundingClientRect()
-      const result = computeScale(rect.width - chromeW, rect.height - chromeH, dpr, scaleMode)
+      const result = computeScale(rect.width - chromeW, rect.height - chromeH, dpr, scaleMode, compact ? COMPACT_FILL : undefined)
 
       const style = deviceEl.style
       style.setProperty('--screen-w', `${result.cssW}px`)

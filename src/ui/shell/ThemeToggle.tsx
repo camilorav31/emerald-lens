@@ -1,6 +1,8 @@
 import { useEffect, useSyncExternalStore } from 'react'
 import { useSettingsStore, type Theme } from '../../store/settingsStore'
 
+// Bar color under the browser toolbar: the page gradient's top color plus its glow (keep in sync with index.html)
+const THEME_COLOR: Record<Theme, string> = { dark: '#0f382a', light: '#dcede4' }
 const DARK_QUERY = '(prefers-color-scheme: dark)'
 const subscribeSystem = (onChange: () => void) => {
   const query = window.matchMedia(DARK_QUERY)
@@ -20,7 +22,7 @@ export function useApplyTheme() {
   const theme = useResolvedTheme()
   useEffect(() => {
     document.documentElement.dataset.theme = theme
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#03100c' : '#f3faf6')
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', THEME_COLOR[theme])
   }, [theme])
 }
 

@@ -11,8 +11,6 @@
 /* Utilities read theme variables, so every color follows the active theme */
 @theme inline {
   --color-*: initial;
-  --color-white: #ffffff;
-  --color-black: #000000;
 
   --color-bg-0: var(--bg-0);
   --color-bg-1: var(--bg-1);
@@ -20,6 +18,8 @@
   --color-surface-2: var(--surface-2);
   --color-surface-3: var(--surface-3);
   --color-panel: var(--panel);
+  --color-scrim: var(--scrim);
+  --color-info-fg: var(--info-fg);
   --color-bar: var(--bar);
   --color-float: var(--float);
   --color-well: var(--well);
@@ -69,8 +69,8 @@
   --shadow-card: var(--sh-card);
   --shadow-float: var(--sh-float);
   --shadow-device: var(--sh-device);
-  --shadow-press: inset 0 1px 2px rgb(0 0 0 / 0.35);
-  --inset-shadow-well: inset 0 2px 6px rgb(0 0 0 / 0.7), inset 0 0 0 1px rgb(0 0 0 / 0.85);
+  --shadow-press: var(--sh-press);
+  --inset-shadow-well: inset 0 2px 6px rgb(0 12 7 / 0.7), inset 0 0 0 1px rgb(0 12 7 / 0.85);
 }
 
 @theme {
@@ -126,42 +126,42 @@
 .scope-dark,
 .device__lens {
   color-scheme: dark;
-  --bg-0: #03100c;
-  --bg-1: #06201a;
-  --surface-1: #081a14;
-  --surface-2: #0c231b;
-  --surface-3: #113026;
-  --panel: rgb(10 34 26 / 0.72);
-  --bar: rgb(4 18 13 / 0.82);
-  --float: #0d241c;
-  --well: #010705;
-  --lens-idle: #020b08;
-  --bezel-hi: #16382d;
-  --bezel-mid: #0e281f;
-  --bezel-lo: #091b15;
-  --keycap: #10291f;
-  --keycap-top: #16352a;
-  --keycap-pressed: #1f4a38;
-  --track: #1b3a2e;
-  --led-off: #2b4a3e;
+  --bg-0: #08261b;
+  --bg-1: #0d3025;
+  --surface-1: #0b2c21;
+  --surface-2: #113429;
+  --surface-3: #1a4536;
+  --panel: rgb(17 52 41 / 0.72);
+  --bar: rgb(8 38 27 / 0.82);
+  --float: #173e32;
+  --well: #051d14;
+  --lens-idle: #072118;
+  --bezel-hi: #1a4536;
+  --bezel-mid: #123227;
+  --bezel-lo: #0b271d;
+  --keycap: #1a4334;
+  --keycap-top: #21503f;
+  --keycap-pressed: #256049;
+  --track: #2b5343;
+  --led-off: #45695a;
   --line-1: rgb(214 255 236 / 0.06);
   --line-2: rgb(214 255 236 / 0.09);
   --line-3: rgb(214 255 236 / 0.14);
   --line-4: rgb(214 255 236 / 0.2);
-  --line-strong: #5f8a7a;
-  --fg-1: #e6f4ee;
-  --fg-2: #9fc2b3;
-  --fg-3: #7ea596;
-  --fg-disabled: #4d6b60;
-  --surface-disabled: #0a1d16;
+  --line-strong: #6a9a89;
+  --fg-1: #e8f5ef;
+  --fg-2: #a9cbbc;
+  --fg-3: #93b8a9;
+  --fg-disabled: #5d7f70;
+  --surface-disabled: #0d281f;
   --line-disabled: rgb(214 255 236 / 0.05);
   --accent: #3ddc97;
   --accent-strong: #7debbb;
   --accent-text: #7debbb;
   --accent-lo: #22b977;
   --accent-ink: #03140d;
-  --accent-tint: rgb(61 220 151 / 0.12);
-  --accent-line: rgb(61 220 151 / 0.32);
+  --accent-tint: rgb(61 220 151 / 0.16);
+  --accent-line: rgb(61 220 151 / 0.38);
   --accent-glow: rgb(61 220 151 / 0.16);
   --focus: #7debbb;
   --warn: #f2b53c;
@@ -173,66 +173,74 @@
   --err-tint: rgb(242 109 109 / 0.12);
   --err-line: rgb(242 109 109 / 0.34);
   --engrave: rgb(214 255 236 / 0.16);
-  --kbd-edge: rgb(0 0 0 / 0.55);
+  --kbd-edge: rgb(0 12 7 / 0.55);
   --shimmer: rgb(214 255 236 / 0.05);
   --page-glow: rgb(61 220 151 / 0.1);
-  --sh-raise: inset 0 1px 0 rgb(214 255 236 / 0.04), 0 1px 2px rgb(0 0 0 / 0.4);
-  --sh-card: inset 0 1px 0 rgb(214 255 236 / 0.05), 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 12px rgb(0 0 0 / 0.28);
-  --sh-float: inset 0 1px 0 rgb(214 255 236 / 0.05), 0 2px 4px rgb(0 0 0 / 0.3), 0 12px 32px rgb(0 0 0 / 0.4),
-    0 32px 64px -16px rgb(0 0 0 / 0.5);
-  --sh-device: inset 0 1px 0 rgb(214 255 236 / 0.07), inset 0 -1px 0 rgb(0 0 0 / 0.5), 0 2px 3px rgb(0 0 0 / 0.35),
-    0 16px 32px -8px rgb(0 0 0 / 0.55), 0 48px 96px -24px rgb(0 0 0 / 0.65);
+  --sh-raise: inset 0 1px 0 rgb(214 255 236 / 0.04), 0 1px 2px rgb(0 12 7 / 0.4);
+  --sh-card: inset 0 1px 0 rgb(214 255 236 / 0.05), 0 1px 2px rgb(0 12 7 / 0.3), 0 4px 12px rgb(0 12 7 / 0.28);
+  --info-fg: #8fb8ff;
+  --ink: 0 12 7;
+  --on-well: #a9cbbc;
+  --scrim: rgb(2 18 12 / 0.66);
+  --egg-hi: #f3f0e0;
+  --egg-lo: #c9c3a8;
+  --egg-edge: var(--line-4);
+  --sprite-shadow: rgb(0 12 7 / 0.5);
+  --sh-press: inset 0 1px 2px rgb(0 12 7 / 0.35);
+  --sh-float: inset 0 1px 0 rgb(214 255 236 / 0.05), 0 2px 4px rgb(0 12 7 / 0.3), 0 12px 32px rgb(0 12 7 / 0.4), 0 32px 64px -16px rgb(0 12 7 / 0.5);
+  --sh-device: inset 0 1px 0 rgb(214 255 236 / 0.07), inset 0 -1px 0 rgb(0 12 7 / 0.5), 0 2px 3px rgb(0 12 7 / 0.35), 0 16px 32px -8px rgb(0 12 7 / 0.55), 0 48px 96px -24px rgb(0 12 7 / 0.65);
 }
 
-/* Day: white with emerald. Contrast checked: fg-3 >= 5.0:1 and accent text >= 5.2:1 on every surface. */
+/* Day: soft sage with deep-green wells (never pure white or black). Contrast checked: fg-3 >= 4.7:1 and
+   accent text >= 5.0:1 on every surface, including the dock. Only ever lighten surfaces, not darken them. */
 [data-theme='light'] {
   color-scheme: light;
-  --bg-0: #f3faf6;
-  --bg-1: #ffffff;
-  --surface-1: #eaf4ef;
-  --surface-2: #ffffff;
-  --surface-3: #e1efe8;
-  --panel: rgb(255 255 255 / 0.8);
-  --bar: rgb(247 252 249 / 0.86);
-  --float: #ffffff;
-  --well: #0a1712;
-  --lens-idle: #06120e;
-  --bezel-hi: #ffffff;
-  --bezel-mid: #f1f8f4;
-  --bezel-lo: #e2efe8;
-  --keycap: #eef6f2;
-  --keycap-top: #ffffff;
-  --keycap-pressed: #c9f0dc;
-  --track: #d7e7df;
-  --led-off: #c3d6cd;
+  --bg-0: #dbeae2;
+  --bg-1: #e7f1eb;
+  --surface-1: #d2e3d9;
+  --surface-2: #e8f2ec;
+  --surface-3: #c6dacf;
+  --panel: rgb(232 242 236 / 0.8);
+  --bar: rgb(219 234 226 / 0.86);
+  --float: #edf5f0;
+  --well: #0f3126;
+  --lens-idle: #072118;
+  --bezel-hi: #e0ede5;
+  --bezel-mid: #cadcd0;
+  --bezel-lo: #bcd1c4;
+  --keycap: #dce9e1;
+  --keycap-top: #eef6f1;
+  --keycap-pressed: #a9dcc1;
+  --track: #cfe0d6;
+  --led-off: #9db8a9;
   --line-1: rgb(8 60 40 / 0.08);
   --line-2: rgb(8 60 40 / 0.12);
   --line-3: rgb(8 60 40 / 0.18);
   --line-4: rgb(8 60 40 / 0.26);
-  --line-strong: #658679;
+  --line-strong: #4f7364;
   --fg-1: #0a2a1f;
-  --fg-2: #365a4c;
-  --fg-3: #4b6a5e;
-  --fg-disabled: #9db3aa;
-  --surface-disabled: #edf3f0;
+  --fg-2: #2f5245;
+  --fg-3: #3a5a4d;
+  --fg-disabled: #758f82;
+  --surface-disabled: #d8e6de;
   --line-disabled: rgb(8 60 40 / 0.06);
   --accent: #1fbf7f;
   --accent-strong: #35d08f;
-  --accent-text: #067048;
+  --accent-text: #05603e;
   --accent-lo: #17a86e;
   --accent-ink: #03140d;
   --accent-tint: rgb(31 191 127 / 0.12);
-  --accent-line: rgb(6 112 72 / 0.32);
+  --accent-line: rgb(5 96 62 / 0.34);
   --accent-glow: rgb(31 191 127 / 0.22);
-  --focus: #067048;
+  --focus: #05603e;
   --warn: #d99a12;
-  --warn-fg: #8a5a00;
+  --warn-fg: #744a00;
   --warn-tint: rgb(217 154 18 / 0.12);
-  --warn-line: rgb(138 90 0 / 0.3);
+  --warn-line: rgb(116 74 0 / 0.32);
   --err: #d64545;
-  --err-fg: #b42318;
+  --err-fg: #a01d12;
   --err-tint: rgb(214 69 69 / 0.1);
-  --err-line: rgb(180 35 24 / 0.3);
+  --err-line: rgb(160 29 18 / 0.3);
   --engrave: rgb(8 60 40 / 0.22);
   --kbd-edge: rgb(8 60 40 / 0.22);
   --shimmer: rgb(8 60 40 / 0.06);
@@ -240,8 +248,26 @@
   --sh-raise: 0 1px 2px rgb(8 60 40 / 0.1);
   --sh-card: 0 1px 2px rgb(8 60 40 / 0.06), 0 4px 14px rgb(8 60 40 / 0.07);
   --sh-float: 0 2px 4px rgb(8 60 40 / 0.08), 0 12px 32px rgb(8 60 40 / 0.14), 0 32px 64px -16px rgb(8 60 40 / 0.18);
-  --sh-device: inset 0 1px 0 #ffffff, inset 0 -1px 0 rgb(8 60 40 / 0.08), 0 2px 3px rgb(8 60 40 / 0.08),
-    0 16px 32px -8px rgb(8 60 40 / 0.16), 0 48px 96px -24px rgb(8 60 40 / 0.22);
+  --info-fg: #184e93;
+  --ink: 6 40 26;
+  --on-well: #a9cbbc;
+  --scrim: rgb(6 40 26 / 0.5);
+  --egg-hi: #e6db9f;
+  --egg-lo: #a8965a;
+  --egg-edge: #7d6d35;
+  --sprite-shadow: rgb(8 60 40 / 0.22);
+  --sh-press: inset 0 1px 2px rgb(8 60 40 / 0.28);
+  --sh-device: inset 0 1px 0 rgb(244 250 247 / 0.7), inset 0 -1px 0 rgb(8 60 40 / 0.1), 0 2px 3px rgb(8 60 40 / 0.1), 0 16px 32px -8px rgb(8 60 40 / 0.2), 0 48px 96px -24px rgb(8 60 40 / 0.26);
+}
+
+/* The party strip is a dark well in both themes; keep it the same recess as the console in day mode */
+[data-theme='light'] .party-well {
+  --well: #0f3126;
+}
+
+@utility egg {
+  background: linear-gradient(160deg, var(--egg-hi), var(--egg-lo));
+  border: 1px solid var(--egg-edge);
 }
 
 @utility num {
@@ -273,10 +299,17 @@
     --well-radius: 10px;
   }
 }
+@media (hover: none) and (pointer: coarse) and (width < 64rem) and (orientation: portrait) {
+  :root {
+    --topbar-h: 44px;
+  }
+}
 
 @layer base {
   html {
     scroll-padding-top: calc(var(--topbar-h) + 8px);
+    /* no rubber-band or pull-to-refresh: a stray swipe must never reload a running game */
+    overscroll-behavior: none;
   }
   body {
     margin: 0;
@@ -295,6 +328,45 @@
     background:
       radial-gradient(90rem 36rem at 50% -14rem, var(--page-glow), transparent 70%),
       linear-gradient(180deg, var(--color-bg-1) 0%, var(--color-bg-0) 60%);
+  }
+  @media (pointer: coarse) {
+    html {
+      -webkit-tap-highlight-color: transparent;
+    }
+    /* no double-tap zoom on controls; text is not selectable except where reading matters */
+    button,
+    a,
+    label,
+    summary,
+    [role='button'],
+    [role='radio'] {
+      touch-action: manipulation;
+    }
+    body {
+      -webkit-touch-callout: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    input,
+    textarea,
+    pre,
+    code,
+    [popover],
+    [role='dialog'] {
+      -webkit-touch-callout: default;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+    img {
+      -webkit-touch-callout: none;
+    }
+  }
+  /* the handheld never scrolls; below 500px tall (split screen, landscape keyboards) it may */
+  @media (hover: none) and (pointer: coarse) and (width < 64rem) and (orientation: portrait) and (height >= 500px) {
+    html,
+    body {
+      overflow: hidden;
+    }
   }
   :focus-visible {
     outline: 2px solid var(--color-focus);
@@ -321,7 +393,7 @@
     border: 1px solid var(--color-line-2);
     border-radius: var(--radius-device);
     background:
-      linear-gradient(180deg, rgb(255 255 255 / 0.03), transparent 28%),
+      linear-gradient(180deg, rgb(214 255 236 / 0.03), transparent 28%),
       linear-gradient(180deg, var(--color-bezel-hi) 0%, var(--color-bezel-mid) 46%, var(--color-bezel-lo) 100%);
     box-shadow: var(--shadow-device);
   }
@@ -335,10 +407,10 @@
     background: conic-gradient(
       from 215deg,
       transparent 0deg,
-      rgb(255 255 255 / 0.12) 40deg,
+      rgb(214 255 236 / 0.12) 40deg,
       transparent 95deg,
       transparent 200deg,
-      rgb(255 255 255 / 0.07) 250deg,
+      rgb(214 255 236 / 0.07) 250deg,
       transparent 305deg
     );
     mask:
@@ -385,8 +457,8 @@
     background: var(--color-well);
     box-shadow:
       var(--inset-shadow-well),
-      0 1px 0 rgb(255 255 255 / 0.06),
-      0 -1px 0 rgb(0 0 0 / 0.4),
+      0 1px 0 rgb(214 255 236 / 0.06),
+      0 -1px 0 rgb(var(--ink) / 0.4),
       0 0 0 1px rgb(61 220 151 / var(--ring-a));
     transition: --ring-a 200ms var(--ease-out);
   }
@@ -404,7 +476,8 @@
     height: var(--screen-h);
     overflow: hidden;
     border-radius: 2px;
-    background: #000;
+    background: var(--lens-idle);
+    color: var(--fg-1);
     container: lens / size;
   }
   .device__lens > canvas {
@@ -530,7 +603,7 @@
     height: 6px;
     border-radius: 999px;
     background: var(--color-led-off);
-    box-shadow: inset 0 1px 1px rgb(0 0 0 / 0.6);
+    box-shadow: inset 0 1px 1px rgb(var(--ink) / 0.6);
     transition:
       background-color 200ms var(--ease-out),
       box-shadow 200ms var(--ease-out);
@@ -538,19 +611,19 @@
   .led[data-tone='accent'] {
     background: var(--color-accent);
     box-shadow:
-      0 0 0 1px rgb(0 0 0 / 0.5),
+      0 0 0 1px rgb(var(--ink) / 0.5),
       0 0 6px var(--color-accent-glow);
   }
   .led[data-tone='warn'] {
     background: var(--color-warn);
     box-shadow:
-      0 0 0 1px rgb(0 0 0 / 0.5),
+      0 0 0 1px rgb(var(--ink) / 0.5),
       0 0 6px rgb(242 181 60 / 0.16);
   }
   .led[data-tone='err'] {
     background: var(--color-err);
     box-shadow:
-      0 0 0 1px rgb(0 0 0 / 0.5),
+      0 0 0 1px rgb(var(--ink) / 0.5),
       0 0 6px rgb(242 109 109 / 0.16);
   }
 
@@ -566,7 +639,7 @@
     border: 1px solid var(--color-line-2);
     border-bottom: 2px solid var(--kbd-edge);
     background: linear-gradient(180deg, var(--color-keycap-top), var(--color-keycap));
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06);
+    box-shadow: inset 0 1px 0 rgb(214 255 236 / 0.06);
     color: var(--color-fg-1);
     font: 500 11px/1 var(--font-mono);
     letter-spacing: 0.04em;
@@ -857,7 +930,7 @@
     column-gap: 8px;
     background: linear-gradient(180deg, var(--bezel-hi), var(--bezel-mid) 60%, var(--bezel-lo));
     border-top: 1px solid var(--line-3);
-    box-shadow: 0 -8px 24px rgb(0 0 0 / 0.25);
+    box-shadow: 0 -8px 24px rgb(var(--ink) / 0.3);
     touch-action: none;
     user-select: none;
     -webkit-user-select: none;
@@ -913,7 +986,7 @@
     position: absolute;
     border-radius: 10px;
     background: var(--well);
-    border: 1px solid var(--line-2);
+    border: 1px solid rgb(214 255 236 / 0.12);
     box-shadow: var(--sh-raise);
   }
   .touch-pad__dpad::before {
@@ -929,7 +1002,7 @@
     place-items: center;
     width: var(--pad-arm);
     height: var(--pad-arm);
-    color: var(--fg-3);
+    color: var(--on-well);
     pointer-events: none;
     transition: color 90ms var(--ease-out);
   }
@@ -996,47 +1069,177 @@
     bottom: 14px;
   }
 
-  /* docked in the page flow (portrait phones) instead of fixed over it */
+  /* Docked in the page flow (portrait phones): full-bleed like the bottom half of a handheld, d-pad and
+     A/B side by side, Select/Start under them, L/R as tabs on the top edge. Side padding stays >= 24px so
+     the d-pad never starts inside the OS edge-swipe zone. */
   .touch-pad--dock {
     position: relative;
     inset: auto;
     z-index: 0;
     height: auto;
-    min-height: min(38dvh, 320px);
-    row-gap: 8px;
-    grid-template-rows: 30px minmax(0, 1fr);
-    padding: 10px 14px calc(14px + env(safe-area-inset-bottom));
-    border-radius: 26px 26px 0 0;
+    margin-inline: -12px;
+    --pad-col: clamp(112px, min(34vw, 19dvh), 148px);
+    padding: 22px max(24px, env(safe-area-inset-right)) calc(14px + env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: minmax(0, 1fr) auto;
+    row-gap: 10px;
+    column-gap: 0;
+    min-height: min(340px, calc(74px + var(--pad-col) + max(0px, (100dvh - 640px) * 0.5)));
+    border-radius: 28px 28px 0 0;
     box-shadow: none;
+  }
+  @media (height < 520px) {
+    .touch-pad--dock {
+      padding-top: 16px;
+      row-gap: 6px;
+    }
   }
   .touch-pad[data-idle] :is(.touch-pad__dpad, .touch-pad__shoulder, .touch-pad__center, .touch-pad__face) {
     opacity: 0.5;
   }
-  .touch-pad__utils {
+  .touch-pad--dock .touch-pad__dpad {
     grid-row: 1;
-    grid-column: 1 / -1;
-    justify-self: center;
-    align-self: center;
-    display: flex;
-    gap: 8px;
+    grid-column: 1;
+    justify-self: start;
   }
-  .touch-pad__util {
-    width: 30px;
-    height: 30px;
-    border-radius: 999px;
-    color: var(--fg-2);
-    font: 700 11px/1 var(--font-sans);
-  }
-  .touch-pad__util[aria-pressed='true'] {
-    color: var(--accent-text);
-    border-color: var(--accent-line);
-  }
-  .touch-pad--dock .touch-pad__dpad,
   .touch-pad--dock .touch-pad__face {
-    grid-row: 2;
+    grid-row: 1;
+    grid-column: 2;
+    justify-self: end;
   }
   .touch-pad--dock .touch-pad__center {
     grid-row: 2;
+    grid-column: 1 / -1;
+    flex-direction: row;
+    justify-content: center;
+    align-self: center;
+    gap: 14px;
+    padding: 0;
+  }
+  .touch-pad--dock .touch-pad__pill {
+    width: 64px;
+    height: 28px;
+    position: relative;
+  }
+  .touch-pad--dock .touch-pad__shoulder {
+    position: absolute;
+    top: -6px;
+    grid-row: auto;
+    grid-column: auto;
+    width: 88px;
+    height: 26px;
+  }
+  .touch-pad--dock .touch-pad__shoulder--l {
+    left: max(24px, env(safe-area-inset-left));
+  }
+  .touch-pad--dock .touch-pad__shoulder--r {
+    right: max(24px, env(safe-area-inset-right));
+    left: auto;
+  }
+  /* 44px touch targets around the small keys */
+  .touch-pad--dock .touch-pad__pill::after {
+    content: '';
+    position: absolute;
+    inset: -9px -6px;
+  }
+  /* no upward extension: the tab sits just under the console chin and must not steal its taps */
+  .touch-pad--dock .touch-pad__shoulder::after {
+    content: '';
+    position: absolute;
+    inset: 0 -6px -9px;
+  }
+
+  /* pause / sound / x2 / settings, in the console chin on portrait phones */
+  .chin-key {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    color: var(--fg-2);
+    font: 700 12px/1 var(--font-sans);
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      background 120ms var(--ease-out),
+      color 120ms var(--ease-out);
+  }
+  .chin-key::before {
+    content: '';
+    position: absolute;
+    inset: -6px;
+  }
+  .chin-key:active {
+    background: var(--line-2);
+    color: var(--fg-1);
+  }
+  .chin-key[aria-pressed='true'] {
+    color: var(--accent-text);
+    background: var(--accent-tint);
+  }
+
+  /* ---------- party chip / row feedback: the ring is a transition (it survives reduced motion), motion is keyframes ---------- */
+  .chip {
+    position: relative;
+  }
+  .chip::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    box-shadow:
+      inset 0 0 0 1.5px var(--fx, var(--accent)),
+      0 0 12px color-mix(in oklab, var(--fx, var(--accent)) 45%, transparent);
+    transition: opacity 900ms var(--ease-out);
+  }
+  .chip[data-lit]::after {
+    opacity: 1;
+    transition-duration: 0s;
+  }
+  .chip[data-fx='level'] {
+    --fx: var(--accent);
+  }
+  .chip[data-fx='faint'] {
+    --fx: var(--err);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .chip[data-lit][data-fx='level'] .chip__sprite {
+      animation: chip-pop 420ms var(--ease-out);
+    }
+    .chip[data-lit][data-fx='faint'] .chip__sprite {
+      animation: chip-shake 320ms linear;
+    }
+  }
+  @keyframes chip-pop {
+    0% {
+      scale: 1;
+    }
+    35% {
+      scale: 1.22;
+    }
+    100% {
+      scale: 1;
+    }
+  }
+  @keyframes chip-shake {
+    0%,
+    100% {
+      translate: 0 0;
+    }
+    20% {
+      translate: -3px 0;
+    }
+    40% {
+      translate: 3px 0;
+    }
+    60% {
+      translate: -2px 0;
+    }
+    80% {
+      translate: 1px 0;
+    }
   }
 
   /* ---------- first-load splash ---------- */
@@ -1172,10 +1375,15 @@
     }
   }
   @media (hover: none) and (pointer: coarse) and (width < 64rem) and (orientation: portrait) {
+    /* Spare height goes 1:2 above/below the screen, so the party strip stays close to the console it describes */
     .stage {
       height: 100%;
       min-height: 0;
-      align-items: center;
+      align-items: start;
+      grid-template-rows: minmax(0, 1fr) auto minmax(0, 2fr);
+    }
+    .stage > .device {
+      grid-row: 2;
     }
     .stage__probe {
       inset: 0;
@@ -1201,12 +1409,22 @@
 }
 
 @media (prefers-contrast: more) {
-  :root {
+  :root,
+  [data-theme='dark'],
+  .scope-dark,
+  .device__lens {
     --line-1: rgb(214 255 236 / 0.16);
     --line-2: rgb(214 255 236 / 0.24);
     --line-3: rgb(214 255 236 / 0.32);
     --line-4: rgb(214 255 236 / 0.4);
-    --fg-3: #9fc2b3;
+    --fg-3: #b4d3c6;
+  }
+  [data-theme='light'] {
+    --line-1: rgb(8 60 40 / 0.2);
+    --line-2: rgb(8 60 40 / 0.3);
+    --line-3: rgb(8 60 40 / 0.42);
+    --line-4: rgb(8 60 40 / 0.55);
+    --fg-3: #244a3c;
   }
 }
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {

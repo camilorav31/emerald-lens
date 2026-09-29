@@ -1,6 +1,7 @@
 import { useEmulatorStore } from '../../store/emulatorStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { PerfHud } from './PerfHud'
+import { SystemKeys } from './SystemKeys'
 import { Kbd, Led, VisuallyHidden } from '../primitives'
 import { useMediaQuery } from '../useMediaQuery'
 import type { ScreenScale } from './useIntegerScale'
@@ -18,7 +19,7 @@ export function Chin({ scale, showInput = true }: { scale: ScreenScale; showInpu
 
   return (
     <div className="device__chin">
-      <p className="flex min-w-0 items-center gap-2 handheld:invisible">
+      <p className="flex min-w-0 items-center gap-2 handheld:hidden">
         {showInput && touch && (
           <>
             <Led tone="accent" />
@@ -45,11 +46,11 @@ export function Chin({ scale, showInput = true }: { scale: ScreenScale; showInpu
       {perfMonitor ? (
         <PerfHud />
       ) : (
-        <span className="chin__engraving handheld:inline" aria-hidden="true">
+        <span className="chin__engraving handheld:hidden" aria-hidden="true">
           Emerald Lens
         </span>
       )}
-      <p className="num flex items-center gap-2 justify-self-end whitespace-nowrap handheld:invisible" title="Píxeles físicos de tu pantalla">
+      <p className="num flex items-center gap-2 justify-self-end whitespace-nowrap handheld:hidden" title="Píxeles físicos de tu pantalla">
         {fastForward && running && (
           <span className="rounded-xs bg-accent px-1.5 py-px font-mono text-[11px] font-semibold text-accent-ink" role="status">
             ×2
@@ -72,6 +73,12 @@ export function Chin({ scale, showInput = true }: { scale: ScreenScale; showInpu
           </>
         )}
       </p>
+      <div className="col-start-1 row-start-1 hidden items-center gap-1 handheld:flex">
+        <SystemKeys side="left" />
+      </div>
+      <div className="col-start-3 row-start-1 hidden items-center gap-1 justify-self-end handheld:flex">
+        <SystemKeys side="right" />
+      </div>
     </div>
   )
 }

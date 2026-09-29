@@ -34,16 +34,16 @@ export function RadarChart({ stats, size = 140, raised, lowered }: Props) {
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label="Gráfico de estadísticas">
       {[0.33, 0.66, 1].map((f) => (
-        <polygon key={f} points={ring(radius * f)} fill="none" stroke="rgb(255 255 255 / 0.09)" />
+        <polygon key={f} points={ring(radius * f)} fill="none" stroke={f === 1 ? 'var(--line-4)' : 'var(--line-3)'} />
       ))}
       {STAT_ORDER.map((_, i) => {
         const [x, y] = point(i, radius)
-        return <line key={i} x1={center} y1={center} x2={x} y2={y} stroke="rgb(255 255 255 / 0.06)" />
+        return <line key={i} x1={center} y1={center} x2={x} y2={y} stroke="var(--line-2)" />
       })}
-      <polygon points={shape} fill="rgb(61 220 151 / 0.22)" stroke="var(--color-accent)" strokeWidth="1.5" strokeLinejoin="round" />
+      <polygon points={shape} fill="var(--color-accent)" fillOpacity={0.22} stroke="var(--color-accent)" strokeWidth="1.5" strokeLinejoin="round" />
       {STAT_ORDER.map((k, i) => {
         const [x, y] = point(i, radius + 10)
-        const tone = k === raised ? 'var(--color-err-fg)' : k === lowered ? '#8fb8ff' : 'var(--color-fg-3)'
+        const tone = k === raised ? 'var(--color-err-fg)' : k === lowered ? 'var(--color-info-fg)' : 'var(--color-fg-3)'
         return (
           <text key={k} x={x} y={y} textAnchor="middle" dominantBaseline="middle" fontSize="10" fontWeight="600" fill={tone}>
             {SHORT[k]}

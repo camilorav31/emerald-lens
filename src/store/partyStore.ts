@@ -1,6 +1,9 @@
 import { create } from 'zustand'
 import { readVblankCounter } from '../memory/offsets'
 import { hasTornSlot, readParty, type PartyReading } from '../memory/partyReader'
+import { haptic } from '../ui/party/effects'
+import type { PartyMon } from '../memory/gen3/pokemon'
+import { announce } from './announcer'
 import { useEmulatorStore } from './emulatorStore'
 
 const INTERVAL_MS = { live: 500, snapshot: 1000 }
@@ -90,8 +93,37 @@ function stop() {
   lastVblank = null
 }
 
+const monsOf = (reading: PartyReading | null) =>
+  reading?.kind === 'ok' ? reading.slots.flatMap((s) => (s.mon ? [s.mon] : [])) : []
+const identity = (mon: PartyMon) => `${mon.personality}-${mon.otId}`
+
+// Tells screen readers (and, on phones, the hand) about level-ups and faints. One place for every layout, so
+// a mon is announced once however many UIs show it; mons that were not in the previous reading are ignored.
+function notifyChanges(prev: PartyReading | null, next: PartyReading | null) {
+  const before = new Map(monsOf(prev).map((m) => [identity(m), m]))
+  let buzz: 'level' | 'faint' | null = null
+  const messages: string[] = []
+  for (const mon of monsOf(next)) {
+    const old = before.get(identity(mon))
+    if (!old || mon.isEgg) continue
+    if (old.hp > 0 && mon.hp === 0) {
+      messages.push(`${mon.nickname} se debilitó`)
+      buzz = 'faint'
+    } else if (mon.level > old.level) {
+      messages.push(`${mon.nickname} subió al nivel ${mon.level}`)
+      buzz ??= 'level'
+    }
+  }
+  // one live-region message per reading: separate calls would overwrite each other
+  if (messages.length) announce(messages.join('. '))
+  if (buzz) haptic(buzz)
+}
+
 // Polls while a game runs; a pause freezes the last reading, a new cartridge clears it.
 export function startPartyPolling(): () => void {
+  const unsubscribeParty = usePartyStore.subscribe((state, prev) => {
+    if (state.revision !== prev.revision) notifyChanges(prev.reading, state.reading)
+  })
   const unsubscribe = useEmulatorStore.subscribe((state, prev) => {
     if (state.romName !== prev.romName && !usePartyStore.getState().demo) {
       lastKey = ''
@@ -112,6 +144,7 @@ export function startPartyPolling(): () => void {
   }
   return () => {
     unsubscribe()
+    unsubscribeParty()
     stop()
   }
 }

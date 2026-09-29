@@ -1,11 +1,8 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent, type ReactNode } from 'react'
 import type { GbaButton } from '../../emulator/keymaps'
 import { hasGame, useEmulatorStore } from '../../store/emulatorStore'
-import { useSettingsStore } from '../../store/settingsStore'
-import { ArrowIcon, GearIcon, PauseIcon, PlayIcon, SoundIcon } from '../icons'
-import { PopoverButton } from '../panel/Popover'
-import { returnToGame } from './returnToGame'
-import { SettingsContent } from '../panel/SettingsContent'
+import { ArrowIcon } from '../icons'
+import { noFocus } from './noFocus'
 
 // Height reserved at the end of the page so the fixed pad never hides the party or the footer
 const PAD_SPACE = 'hidden touch-only:block handheld:hidden h-[calc(212px+env(safe-area-inset-bottom))]'
@@ -35,12 +32,17 @@ function useHeldButtons(): [Held, SetButton] {
     const unsubscribe = useEmulatorStore.subscribe((state, prev) => {
       if (state.status !== 'running' && prev.status === 'running') releaseAll()
     })
+    // a lost pointerup (rotation, call, app switch) must never leave a button stuck down
     document.addEventListener('visibilitychange', releaseAll)
     window.addEventListener('blur', releaseAll)
+    window.addEventListener('pagehide', releaseAll)
+    window.addEventListener('orientationchange', releaseAll)
     return () => {
       unsubscribe()
       document.removeEventListener('visibilitychange', releaseAll)
       window.removeEventListener('blur', releaseAll)
+      window.removeEventListener('pagehide', releaseAll)
+      window.removeEventListener('orientationchange', releaseAll)
       releaseAll()
     }
   }, [set])
@@ -48,14 +50,18 @@ function useHeldButtons(): [Held, SetButton] {
   return [held, set]
 }
 
-// Never takes focus: moving it off the game screen would make the core drop every held button
-const noFocus = (e: PointerEvent) => e.preventDefault()
+// Keyboard, switch and voice-control activation arrives as a click with no pointer: press briefly
+function tap(set: SetButton, button: GbaButton) {
+  set(button, true)
+  setTimeout(() => set(button, false), 90)
+}
 
 function PadButton({
   button,
   label,
   held,
   set,
+  idle,
   className,
   children,
 }: {
@@ -63,6 +69,7 @@ function PadButton({
   label: string
   held: Held
   set: SetButton
+  idle: boolean
   className: string
   children: ReactNode
 }) {
@@ -71,6 +78,7 @@ function PadButton({
       type="button"
       tabIndex={-1}
       aria-label={label}
+      aria-disabled={idle || undefined}
       data-pressed={held.has(button) || undefined}
       className={`touch-pad__btn ${className}`}
       onPointerDown={(e) => {
@@ -81,6 +89,7 @@ function PadButton({
       onPointerUp={() => set(button, false)}
       onPointerCancel={() => set(button, false)}
       onLostPointerCapture={() => set(button, false)}
+      onClick={(e) => e.detail === 0 && tap(set, button)}
       onContextMenu={(e) => e.preventDefault()}
     >
       {children}
@@ -89,6 +98,7 @@ function PadButton({
 }
 
 const DIRECTIONS = ['up', 'right', 'down', 'left'] as const
+const DIRECTION_NAMES = { up: 'Arriba', right: 'Derecha', down: 'Abajo', left: 'Izquierda' }
 
 // One surface for the whole cross, so a thumb can slide between directions (and into diagonals)
 function Dpad({ held, set }: { held: Held; set: SetButton }) {
@@ -132,87 +142,31 @@ function Dpad({ held, set }: { held: Held; set: SetButton }) {
           <ArrowIcon direction={d} size={18} />
         </span>
       ))}
-    </div>
-  )
-}
-
-function PadUtilities() {
-  const status = useEmulatorStore((s) => s.status)
-  const togglePause = useEmulatorStore((s) => s.togglePause)
-  const muted = useSettingsStore((s) => s.muted)
-  const toggleMuted = useSettingsStore((s) => s.toggleMuted)
-  const fastForward = useSettingsStore((s) => s.fastForward)
-  const toggleFastForward = useSettingsStore((s) => s.toggleFastForward)
-  const loaded = hasGame(status)
-
-  return (
-    <div className="touch-pad__utils">
-      {loaded && (
-        <>
-          <button
-            type="button"
-            tabIndex={-1}
-            className="touch-pad__btn touch-pad__util"
-            aria-label={status === 'running' ? 'Pausar' : 'Reanudar'}
-            onPointerDown={noFocus}
-            onClick={togglePause}
-          >
-            {status === 'running' ? <PauseIcon /> : <PlayIcon />}
-          </button>
-          <button
-            type="button"
-            tabIndex={-1}
-            className="touch-pad__btn touch-pad__util"
-            aria-label="Música y sonido"
-            aria-pressed={!muted}
-            onPointerDown={noFocus}
-            onClick={toggleMuted}
-          >
-            <SoundIcon muted={muted} />
-          </button>
-          <button
-            type="button"
-            tabIndex={-1}
-            className="touch-pad__btn touch-pad__util"
-            aria-label="Velocidad ×2"
-            aria-pressed={fastForward}
-            onPointerDown={noFocus}
-            onClick={toggleFastForward}
-          >
-            ×2
-          </button>
-        </>
-      )}
-      <PopoverButton
-        label="Ajustes"
-        title="Ajustes"
-        icon={<GearIcon />}
-        width={560}
-        placement="above"
-        buttonClassName="touch-pad__btn touch-pad__util"
-        onClose={returnToGame}
-      >
-        <SettingsContent />
-      </PopoverButton>
+      {DIRECTIONS.map((d) => (
+        <button key={d} type="button" tabIndex={-1} className="sr-only" onClick={() => tap(set, d)}>
+          {DIRECTION_NAMES[d]}
+        </button>
+      ))}
     </div>
   )
 }
 
 // On-screen gamepad for touch devices. `fixed` floats over the page (tablets, landscape phones);
-// `dock` sits in the flow at the bottom of the handheld layout and also carries the utility buttons.
+// `dock` sits in the flow at the bottom of the portrait-phone layout.
 export function TouchControls({ variant = 'fixed' }: { variant?: 'fixed' | 'dock' }) {
   const loaded = useEmulatorStore((s) => hasGame(s.status))
+  const running = useEmulatorStore((s) => s.status === 'running')
   const [held, set] = useHeldButtons()
   const dock = variant === 'dock'
   if (!loaded && !dock) return null
-  const props = { held, set }
+  const props = { held, set, idle: !running }
 
   return (
     <>
       {!dock && <div className={PAD_SPACE} aria-hidden="true" />}
       <section
         aria-label="Controles táctiles"
-        data-idle={!loaded || undefined}
+        data-idle={!running || undefined}
         className={dock ? 'touch-pad touch-pad--dock hidden handheld:grid' : 'touch-pad hidden touch-only:grid handheld:hidden'}
       >
         <PadButton {...props} button="l" label="L" className="touch-pad__shoulder touch-pad__shoulder--l">
@@ -221,9 +175,8 @@ export function TouchControls({ variant = 'fixed' }: { variant?: 'fixed' | 'dock
         <PadButton {...props} button="r" label="R" className="touch-pad__shoulder touch-pad__shoulder--r">
           R
         </PadButton>
-        {dock && <PadUtilities />}
 
-        <Dpad {...props} />
+        <Dpad held={held} set={set} />
 
         <div className="touch-pad__center">
           <PadButton {...props} button="select" label="Select" className="touch-pad__pill">

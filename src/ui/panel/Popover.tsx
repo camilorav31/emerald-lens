@@ -1,4 +1,5 @@
 import { useId, useRef, useState, type ReactNode } from 'react'
+import { HANDHELD_QUERY, useMediaQuery } from '../useMediaQuery'
 
 interface Props {
   label: string
@@ -9,17 +10,17 @@ interface Props {
   // Runs after it closes, only when focus was left on the trigger (Esc or the trigger itself),
   // never when the user clicked another control
   onClose?: () => void
-  // Opens above the trigger (for controls docked at the bottom of the screen)
-  placement?: 'below' | 'above'
   // Replaces the default trigger look; with it the trigger also keeps focus where it was
   buttonClassName?: string
 }
 
 // Native popover (top layer, light dismiss, Esc) anchored under its trigger button.
-export function PopoverButton({ label, icon, title, children, width = 320, onClose, placement = 'below', buttonClassName }: Props) {
+export function PopoverButton({ label, icon, title, children, width = 320, onClose, buttonClassName }: Props) {
   const id = useId()
   const buttonRef = useRef<HTMLButtonElement>(null)
-  const [position, setPosition] = useState<{ top?: number; bottom?: number; right: number; maxHeight: string }>({ top: 0, right: 0, maxHeight: 'calc(100dvh - 80px)' })
+  const [position, setPosition] = useState<{ top: number; right: number }>({ top: 0, right: 0 })
+  // On portrait phones it is a bottom sheet with a scrim, like the party detail, instead of a floating card
+  const sheet = useMediaQuery(HANDHELD_QUERY)
 
   return (
     <>
@@ -43,26 +44,19 @@ export function PopoverButton({ label, icon, title, children, width = 320, onClo
         onBeforeToggle={(e) => {
           if ((e as unknown as ToggleEvent).newState !== 'open' || !buttonRef.current) return
           const rect = buttonRef.current.getBoundingClientRect()
-          const right = Math.max(8, window.innerWidth - rect.right)
-          setPosition(
-            placement === 'above'
-              ? { bottom: window.innerHeight - rect.top + 8, right: 8, maxHeight: `${Math.max(160, rect.top - 16)}px` }
-              : { top: rect.bottom + 8, right, maxHeight: 'calc(100dvh - 80px)' },
-          )
+          setPosition({ top: rect.bottom + 8, right: Math.max(8, window.innerWidth - rect.right) })
         }}
         onToggle={(e) => {
           if ((e as unknown as ToggleEvent).newState !== 'closed') return
           const active = document.activeElement
           if (active === buttonRef.current || active === document.body) onClose?.()
         }}
-        style={{
-          top: position.top,
-          bottom: position.bottom,
-          right: position.right,
-          maxHeight: position.maxHeight,
-          width: `min(${width}px, calc(100vw - 16px))`,
-        }}
-        className="fixed inset-auto m-0 overflow-y-auto rounded-[12px] border border-line-3 bg-float p-4 text-fg-1 shadow-float"
+        style={
+          sheet
+            ? { left: 8, right: 8, bottom: 'calc(8px + env(safe-area-inset-bottom))', width: 'auto', maxHeight: 'min(72dvh, 560px)' }
+            : { top: position.top, right: position.right, maxHeight: 'calc(100dvh - 80px)', width: `min(${width}px, calc(100vw - 16px))` }
+        }
+        className="fixed inset-auto m-0 overflow-y-auto overscroll-contain rounded-[12px] border border-line-3 bg-float p-4 text-fg-1 shadow-float handheld:backdrop:bg-scrim handheld:rounded-[20px]"
       >
         <h2 className="section-label mb-3">{title}</h2>
         {children}

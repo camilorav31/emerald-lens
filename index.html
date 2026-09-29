@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#03100c" />
+    <meta name="theme-color" content="#0f382a" />
     <meta name="color-scheme" content="dark light" />
     <meta
       name="description"
@@ -16,6 +16,8 @@
         const saved = JSON.parse(localStorage.getItem('emerald-lens:settings') || '{}').state?.theme
         const theme = saved || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
         document.documentElement.dataset.theme = theme
+        // Same literals as THEME_COLOR in ThemeToggle.tsx (the CSS is not loaded yet, so they cannot be read from it)
+        document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'light' ? '#dcede4' : '#0f382a')
       } catch {}
     </script>
   </head>
