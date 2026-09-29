@@ -19,7 +19,7 @@ export function AppShell({ stage, panel }: { stage: ReactNode; panel: ReactNode 
         {stage}
         <aside
           aria-label="Panel del emulador"
-          className="flex min-w-0 flex-col lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain lg:px-0.5 lg:[scrollbar-gutter:stable] lg:[scrollbar-width:thin]"
+          className="flex min-w-0 flex-col lg:min-h-0 lg:overflow-y-auto lg:overflow-x-hidden lg:overscroll-contain lg:px-0.5 lg:[scrollbar-gutter:stable] lg:[scrollbar-width:thin]"
         >
           {panel}
         </aside>

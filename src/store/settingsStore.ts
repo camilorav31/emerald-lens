@@ -71,15 +71,16 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: SETTINGS_KEY,
       storage: createJSONStorage(() => safeStorage),
-      partialize: ({ filter, lastRom, controlScheme, theme, muted, fastForward, perfMonitor }) => ({
+      partialize: ({ filter, lastRom, controlScheme, theme, muted, perfMonitor }) => ({
         filter,
         lastRom,
         controlScheme,
         theme,
         muted,
-        fastForward,
         perfMonitor,
       }),
+      // 2x is a per-session toggle: never start a visit fast, even if an older version stored it
+      merge: (persisted, current) => ({ ...current, ...(persisted as Partial<SettingsState>), fastForward: false }),
     },
   ),
 )

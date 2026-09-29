@@ -44,6 +44,11 @@ function ToolButton({ label, pressed, onClick, children }: { label: string; pres
   )
 }
 
+// After closing the settings, hand the keyboard back to the game so play resumes without a click
+function returnToGame() {
+  if (useEmulatorStore.getState().status === 'running') document.getElementById('game-screen')?.focus({ preventScroll: true })
+}
+
 const STATUS_TEXT = { booting: 'Iniciando', idle: 'Sin cartucho', running: 'En curso', paused: 'En pausa', error: 'Error' } as const
 
 function Toolbar() {
@@ -75,7 +80,7 @@ function Toolbar() {
           </ToolButton>
         </>
       )}
-      <PopoverButton label="Ajustes" title="Ajustes" icon={<GearIcon />}>
+      <PopoverButton label="Ajustes" title="Ajustes" icon={<GearIcon />} onClose={returnToGame}>
         <SettingsContent />
       </PopoverButton>
     </div>

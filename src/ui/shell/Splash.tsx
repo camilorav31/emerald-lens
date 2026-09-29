@@ -6,6 +6,9 @@ import { GemMark } from '../brand/GemMark'
 
 const RAYQUAZA = 384
 const SEEN_KEY = 'emerald-lens:splash-seen'
+// Minimum time on screen: long enough on a fresh visit to enjoy it, brief when returning in the same session
+const MIN_MS_FIRST_VISIT = 4500
+const MIN_MS_RETURNING = 500
 
 function firstVisitThisSession() {
   try {
@@ -43,7 +46,7 @@ export function Splash() {
   const [minElapsed, setMinElapsed] = useState(false)
 
   useEffect(() => {
-    const timer = setTimeout(() => setMinElapsed(true), firstVisit ? 1800 : 500)
+    const timer = setTimeout(() => setMinElapsed(true), firstVisit ? MIN_MS_FIRST_VISIT : MIN_MS_RETURNING)
     return () => clearTimeout(timer)
   }, [firstVisit])
 
@@ -58,7 +61,7 @@ export function Splash() {
           className="splash"
           role="status"
           aria-label="Cargando Emerald Lens"
-          exit={{ opacity: 0, scale: 1.02, transition: { duration: 0.45, ease: [0.2, 0, 0, 1] } }}
+          exit={{ opacity: 0, scale: 1.02, transition: { duration: 0.7, ease: [0.2, 0, 0, 1] } }}
         >
           <div className="flex flex-col items-center gap-5 px-6 text-center">
             <div className="splash__stage" aria-hidden="true">

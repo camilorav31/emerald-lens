@@ -6,10 +6,13 @@ interface Props {
   title: string
   children: ReactNode
   width?: number
+  // Runs after it closes, only when focus was left on the trigger (Esc or the trigger itself),
+  // never when the user clicked another control
+  onClose?: () => void
 }
 
 // Native popover (top layer, light dismiss, Esc) anchored under its trigger button.
-export function PopoverButton({ label, icon, title, children, width = 320 }: Props) {
+export function PopoverButton({ label, icon, title, children, width = 320, onClose }: Props) {
   const id = useId()
   const buttonRef = useRef<HTMLButtonElement>(null)
   const [position, setPosition] = useState<{ top: number; right: number }>({ top: 0, right: 0 })
@@ -33,6 +36,11 @@ export function PopoverButton({ label, icon, title, children, width = 320 }: Pro
           if ((e as unknown as ToggleEvent).newState !== 'open' || !buttonRef.current) return
           const rect = buttonRef.current.getBoundingClientRect()
           setPosition({ top: rect.bottom + 8, right: Math.max(8, window.innerWidth - rect.right) })
+        }}
+        onToggle={(e) => {
+          if ((e as unknown as ToggleEvent).newState !== 'closed') return
+          const active = document.activeElement
+          if (active === buttonRef.current || active === document.body) onClose?.()
         }}
         style={{ top: position.top, right: position.right, width: `min(${width}px, calc(100vw - 16px))` }}
         className="fixed inset-auto m-0 max-h-[calc(100dvh-80px)] overflow-y-auto rounded-[12px] border border-line-3 bg-float p-4 text-fg-1 shadow-float"
